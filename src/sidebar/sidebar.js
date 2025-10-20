@@ -21,27 +21,44 @@ class SidebarController {
     async init() {
         try {
             console.log('🎨 Initializing DraftLoom Sidebar...');
-            
+
+            // Cache elements first
+            this.cacheElements();
+
             // Initialize API manager
             await apiManager.initialize();
-            
-            // Check critical APIs
-            if (!apiManager.isCriticalReady()) {
-                this.showWarning('Some AI features are not available. Please update Chrome to version 132+');
+
+            // Check critical APIs and show detailed status
+            const caps = apiManager.getCapabilities();
+            const availableCount = Object.values(caps).filter(c => c.available).length;
+
+            if (availableCount === 0) {
+                this.showError(`⚠️ Chrome AI APIs not available.
+
+To enable AI features:
+1. Use Chrome Canary/Dev (127+)
+2. Enable AI flags at chrome://flags
+3. Restart browser
+
+The extension will work once APIs are enabled.`);
+
+                // Disable all buttons
+                this.disableAllButtons();
+            } else if (!apiManager.isCriticalReady()) {
+                this.showWarning(`Some AI features unavailable (${availableCount}/6 APIs ready). Enable more at chrome://flags`);
+            } else {
+                this.showSuccess(`✅ All AI features ready (${availableCount}/6 APIs available)`);
             }
 
-            // Cache elements
-            this.cacheElements();
-            
             // Attach event listeners
             this.attachEventListeners();
-            
+
             // Load current session
             this.currentSession = await sessionStore.getOrCreateSession();
-            
+
             // Setup tab navigation
             this.setupTabNavigation();
-            
+
             console.log('✅ Sidebar initialized successfully');
         } catch (error) {
             console.error('❌ Sidebar initialization error:', error);
@@ -369,20 +386,34 @@ class SidebarController {
         // Create notification element
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
+
+        // Support multiline messages
+        notification.style.whiteSpace = 'pre-line';
         notification.textContent = message;
-        
+
         // Add to page
         const header = document.querySelector('.sidebar-header');
         if (header) {
             header.parentElement.insertBefore(notification, header.nextElementSibling);
         }
 
-        // Auto-remove after 4 seconds
+        // Auto-remove after longer time for errors
+        const duration = type === 'error' ? 10000 : 4000;
         setTimeout(() => {
             notification.remove();
-        }, 4000);
+        }, duration);
 
         console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+
+    disableAllButtons() {
+        const buttons = document.querySelectorAll('.btn-primary');
+        buttons.forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+            btn.title = 'Chrome AI APIs not available. Please enable them first.';
+        });
     }
 }
 
