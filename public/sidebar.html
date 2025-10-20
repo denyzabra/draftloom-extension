@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DraftLoom - Writing Assistant</title>
+    <link rel="stylesheet" href="styles/sidebar.css">
+    <link rel="stylesheet" href="styles/shared.css">
+</head>
+<body>
+    <div id="sidebar-app">
+        <header class="sidebar-header">
+            <h1>DraftLoom</h1>
+            <button id="close-sidebar" class="btn-icon">✕</button>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="brainstorm">Brainstorm</button>
+            <button class="tab-btn" data-tab="draft">Draft</button>
+            <button class="tab-btn" data-tab="rewrite">Rewrite</button>
+            <button class="tab-btn" data-tab="proofread">Proofread</button>
+        </nav>
+
+        <main class="sidebar-content">
+            <!-- Brainstorm Tab -->
+            <div id="brainstorm-tab" class="tab-content active">
+                <h2>Essay Brainstorming</h2>
+                <textarea id="prompt-input" placeholder="Paste your assignment prompt here..." rows="4"></textarea>
+                <button id="analyze-prompt" class="btn btn-primary">Analyze Prompt</button>
+                <div id="prompt-analysis" class="output-box"></div>
+            </div>
+
+            <!-- Draft Tab -->
+            <div id="draft-tab" class="tab-content">
+                <h2>Generate Draft</h2>
+                <textarea id="draft-input" placeholder="Your ideas and notes..." rows="4"></textarea>
+                <button id="generate-draft" class="btn btn-primary">Generate Draft</button>
+                <div id="draft-output" class="output-box"></div>
+            </div>
+
+            <!-- Rewrite Tab -->
+            <div id="rewrite-tab" class="tab-content">
+                <h2>Rewrite & Polish</h2>
+                <div class="control-group">
+                    <label>Tone:</label>
+                    <select id="tone-select">
+                        <option value="academic">Academic</option>
+                        <option value="professional">Professional</option>
+                        <option value="casual">Casual</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Length:</label>
+                    <select id="length-select">
+                        <option value="expand">Expand</option>
+                        <option value="concise">Make Concise</option>
+                        <option value="maintain">Maintain</option>
+                    </select>
+                </div>
+                <textarea id="rewrite-input" placeholder="Text to rewrite..." rows="4"></textarea>
+                <button id="rewrite-text" class="btn btn-primary">Rewrite</button>
+                <div id="rewrite-output" class="output-box"></div>
+            </div>
+
+            <!-- Proofread Tab -->
+            <div id="proofread-tab" class="tab-content">
+                <h2>Proofread</h2>
+                <textarea id="proofread-input" placeholder="Paste text to proofread..." rows="4"></textarea>
+                <button id="proofread-text" class="btn btn-primary">Check Grammar & Spelling</button>
+                <div id="proofread-output" class="output-box">
+                    <div id="corrections-list"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="sidebar-footer">
+            <small>All processing happens locally • No data stored online</small>
+        </footer>
+    </div>
+
+    <script src="sidebar.js"></script>
+</body>
+</html>

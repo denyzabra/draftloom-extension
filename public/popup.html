@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DraftLoom</title>
+    <link rel="stylesheet" href="styles/popup.css">
+    <link rel="stylesheet" href="styles/shared.css">
+</head>
+<body>
+    <div id="popup-container">
+        <header>
+            <h1>DraftLoom</h1>
+            <p class="subtitle">AI Writing Assistant</p>
+        </header>
+        
+        <main>
+            <section id="quick-actions">
+                <button id="open-sidebar" class="btn btn-primary">
+                    <!-- <span class="icon">📝</span>  -->
+                    Open Writing Assistant
+                </button>
+                <button id="analyze-page" class="btn btn-secondary">
+                    <!-- <span class="icon">🔍</span>  -->
+                    Analyze This Page
+                </button>
+            </section>
+
+            <section id="status">
+                <p class="status-text" id="status-text">Ready to assist</p>
+                <div id="progress-bar" class="progress-bar"></div>
+            </section>
+
+            <section id="settings-link">
+                <a href="#" id="settings-btn">Settings & Privacy</a>
+            </section>
+        </main>
+
+        <footer>
+            <p class="footer-text">100% Local Processing | FERPA Compliant</p>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
