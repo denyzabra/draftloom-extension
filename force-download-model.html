@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Chrome AI Model Download</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .step {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            background: #252526;
+            border-left: 4px solid #0e639c;
+        }
+        .success { border-left-color: #4ec9b0; }
+        .error { border-left-color: #f48771; }
+        .warning { border-left-color: #dcdcaa; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button:hover { background: #1177bb; }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            padding: 15px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        h1 { color: #4ec9b0; }
+        h2 { color: #dcdcaa; margin-top: 30px; }
+        .progress {
+            margin: 20px 0;
+            padding: 20px;
+            background: #2d2d30;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Force Chrome AI Model Download</h1>
+    <p>This page will attempt to trigger the Gemini Nano model download.</p>
+
+    <div id="status"></div>
+    <div id="progress" class="progress" style="display: none;">
+        <div id="progressText">Checking...</div>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <button id="checkBtn" onclick="checkAvailability()">1. Check Availability</button>
+        <button id="downloadBtn" onclick="forceDownload()" disabled>2. Force Download</button>
+        <button id="testBtn" onclick="testPrompt()" disabled>3. Test Prompt</button>
+    </div>
+
+    <script>
+        let session = null;
+
+        function log(message, type = 'info') {
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'warning';
+            const div = document.createElement('div');
+            div.className = `step ${className}`;
+            div.innerHTML = message;
+            document.getElementById('status').appendChild(div);
+        }
+
+        function updateProgress(text) {
+            document.getElementById('progressText').textContent = text;
+            document.getElementById('progress').style.display = 'block';
+        }
+
+        async function checkAvailability() {
+            document.getElementById('status').innerHTML = '';
+            log('<h2>Step 1: Checking Chrome AI Availability</h2>');
+
+            if (!('ai' in window)) {
+                log('❌ <strong>window.ai is NOT available</strong>', 'error');
+                log('<strong>TROUBLESHOOTING:</strong><br>1. Ensure you\'re using Chrome Canary 128+<br>2. Enable flags at chrome://flags<br>3. Fully quit and restart Chrome', 'error');
+                return;
+            }
+
+            log('✅ window.ai is available!', 'success');
+
+            if (!window.ai.languageModel) {
+                log('❌ languageModel API not found', 'error');
+                return;
+            }
+
+            log('✅ languageModel API exists', 'success');
+
+            try {
+                updateProgress('Checking capabilities...');
+                const caps = await window.ai.languageModel.capabilities();
+
+                log(`<strong>Availability Status:</strong> ${caps.available}`,
+                    caps.available === 'readily' ? 'success' : 'warning');
+
+                if (caps.available === 'readily') {
+                    log('✅ Model is READY! You can create sessions.', 'success');
+                    document.getElementById('downloadBtn').disabled = true;
+                    document.getElementById('testBtn').disabled = false;
+                } else if (caps.available === 'after-download') {
+                    log('⚠️ Model needs to be downloaded. Click "Force Download" button.', 'warning');
+                    document.getElementById('downloadBtn').disabled = false;
+                } else if (caps.available === 'no') {
+                    log('❌ Model is NOT available on this device/browser', 'error');
+                    log('This might be due to:<br>- Device specs too low<br>- Geographic restrictions<br>- Server-side flags not enabled', 'error');
+                }
+
+                document.getElementById('progress').style.display = 'none';
+            } catch (error) {
+                log(`❌ Error checking capabilities: ${error.message}`, 'error');
+                document.getElementById('progress').style.display = 'none';
+            }
+        }
+
+        async function forceDownload() {
+            log('<h2>Step 2: Forcing Model Download</h2>');
+            log('⏳ Attempting to create session (this triggers download)...', 'warning');
+            updateProgress('Creating session to trigger download... This may take several minutes.');
+
+            try {
+                // Creating a session will trigger the download
+                session = await window.ai.languageModel.create();
+
+                log('✅ <strong>SUCCESS!</strong> Session created. Model is downloaded.', 'success');
+                log('You can now use the AI APIs!', 'success');
+
+                document.getElementById('testBtn').disabled = false;
+                document.getElementById('downloadBtn').disabled = true;
+                document.getElementById('progress').style.display = 'none';
+            } catch (error) {
+                log(`❌ Error creating session: ${error.message}`, 'error');
+                log('<strong>If download started:</strong><br>1. Check chrome://components<br>2. Look for "Optimization Guide On Device Model"<br>3. Wait for download to complete (can take 5-10 minutes)<br>4. Try again after download', 'warning');
+                document.getElementById('progress').style.display = 'none';
+            }
+        }
+
+        async function testPrompt() {
+            log('<h2>Step 3: Testing Prompt API</h2>');
+            updateProgress('Sending test prompt...');
+
+            try {
+                if (!session) {
+                    session = await window.ai.languageModel.create();
+                }
+
+                log('Sending prompt: "Write a haiku about AI"', 'warning');
+
+                const result = await session.prompt('Write a haiku about AI');
+
+                log(`✅ <strong>PROMPT SUCCESSFUL!</strong><br><br><pre>${result}</pre>`, 'success');
+                log('<strong>🎉 Your Chrome AI APIs are working!</strong><br>You can now use your DraftLoom extension with real AI.', 'success');
+
+                document.getElementById('progress').style.display = 'none';
+            } catch (error) {
+                log(`❌ Prompt failed: ${error.message}`, 'error');
+                document.getElementById('progress').style.display = 'none';
+            }
+        }
+
+        // Auto-run check on load
+        window.addEventListener('load', () => {
+            setTimeout(checkAvailability, 500);
+        });
+    </script>
+</body>
+</html>
