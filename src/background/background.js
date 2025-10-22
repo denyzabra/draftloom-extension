@@ -11,6 +11,16 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
+// Open sidebar when extension icon is clicked
+chrome.action.onClicked.addListener(async (tab) => {
+  try {
+    console.log('Extension icon clicked, opening sidebar...');
+    await chrome.sidePanel.open({ windowId: tab.windowId });
+  } catch (error) {
+    console.error('Error opening sidebar:', error);
+  }
+});
+
 // Handle messages from content scripts or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Message received:', request);
@@ -19,6 +29,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.type) {
     case 'ping':
       sendResponse({ status: 'ok', message: 'pong' });
+      break;
+    case 'analyze-page':
+      // Forward to content script if needed
+      sendResponse({ status: 'ok', message: 'Analyzing page...' });
       break;
     default:
       sendResponse({ status: 'error', message: 'Unknown message type' });

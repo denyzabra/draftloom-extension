@@ -19,6 +19,8 @@
             <button class="tab-btn" data-tab="draft">Draft</button>
             <button class="tab-btn" data-tab="rewrite">Rewrite</button>
             <button class="tab-btn" data-tab="proofread">Proofread</button>
+            <button class="tab-btn" data-tab="analyze">Analyze</button>
+            <button class="tab-btn" data-tab="settings">Settings</button>
         </nav>
 
         <main class="sidebar-content">
@@ -69,6 +71,62 @@
                 <button id="proofread-text" class="btn btn-primary">Check Grammar & Spelling</button>
                 <div id="proofread-output" class="output-box">
                     <div id="corrections-list"></div>
+                </div>
+            </div>
+
+            <!-- Analyze Page Tab -->
+            <div id="analyze-tab" class="tab-content">
+                <h2>Analyze Current Page</h2>
+                <p class="info-text">Get insights about the current webpage including word count, headings, and editable areas.</p>
+                <button id="analyze-page-btn" class="btn btn-primary">Analyze This Page</button>
+                <div id="page-analysis-output" class="output-box"></div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <h2>Settings</h2>
+
+                <div class="settings-section">
+                    <h3>Chrome AI Status</h3>
+                    <div id="api-status" class="api-status-container">
+                        <p>Loading API status...</p>
+                    </div>
+                    <button id="refresh-api-status" class="btn btn-secondary">Refresh Status</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Google Gemini API (Fallback)</h3>
+                    <p class="info-text">When Chrome Built-in AI is unavailable, use Google Gemini API as fallback.</p>
+                    <div class="control-group">
+                        <label>API Key:</label>
+                        <input type="password" id="gemini-api-key" placeholder="Enter your Gemini API key">
+                        <button id="save-gemini-key" class="btn btn-primary" style="margin-top: 10px;">Save Key</button>
+                        <button id="test-gemini-key" class="btn btn-secondary" style="margin-top: 10px;">Test Connection</button>
+                    </div>
+                    <p class="info-text" style="margin-top: 10px;">
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank">Get free API key →</a>
+                    </p>
+                    <div id="gemini-status" class="api-status-container" style="margin-top: 10px;"></div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Privacy & Data</h3>
+                    <p class="info-text">Chrome Built-in AI: All processing happens locally in your browser.</p>
+                    <p class="info-text">Gemini API: Data sent to Google's servers (secure, not used for training).</p>
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="enable-cache" checked>
+                            Enable response caching (faster responses)
+                        </label>
+                    </div>
+                    <button id="clear-cache" class="btn btn-secondary">Clear Cache</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>About</h3>
+                    <p class="info-text">DraftLoom v1.0.0</p>
+                    <p class="info-text">FERPA-compliant AI writing assistant powered by Chrome's built-in AI.</p>
+                    <a href="chrome://flags/#optimization-guide-on-device-model" target="_blank" class="btn btn-link">Chrome AI Settings</a>
                 </div>
             </div>
         </main>

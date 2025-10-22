@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome AI Diagnostics</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #252526;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .warning { color: #dcdcaa; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 4px;
+        }
+        button:hover { background: #1177bb; }
+        pre {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            padding: 15px;
+            overflow-x: auto;
+        }
+        h1 { color: #4ec9b0; }
+        h2 { color: #dcdcaa; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Chrome AI Diagnostics</h1>
+    <p>This page checks what's preventing window.ai from working.</p>
+
+    <div id="results"></div>
+
+    <script>
+        const results = [];
+
+        function log(message, type = 'info') {
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'warning';
+            results.push(`<div class="result ${className}">${message}</div>`);
+            document.getElementById('results').innerHTML = results.join('');
+        }
+
+        async function runDiagnostics() {
+            log('=== STEP 1: Chrome Version ===');
+            log(`User Agent: ${navigator.userAgent}`);
+
+            const version = navigator.userAgent.match(/Chrome\/(\d+)/);
+            if (version && parseInt(version[1]) >= 128) {
+                log(`✅ Chrome Version: ${version[1]} (Required: 128+)`, 'success');
+            } else {
+                log(`❌ Chrome Version: ${version ? version[1] : 'Unknown'} (Need 128+)`, 'error');
+            }
+
+            log('\n=== STEP 2: window.ai Check ===');
+            if ('ai' in window) {
+                log('✅ window.ai EXISTS!', 'success');
+                log(`Available APIs: ${Object.keys(window.ai).join(', ')}`, 'success');
+
+                log('\n=== STEP 3: Checking Each API ===');
+
+                // Check Prompt API
+                if (window.ai.languageModel) {
+                    try {
+                        const caps = await window.ai.languageModel.capabilities();
+                        log(`✅ languageModel API: ${caps.available}`,
+                            caps.available === 'no' ? 'error' : 'success');
+
+                        if (caps.available === 'readily') {
+                            log('✅ Model ready - trying to create session...', 'success');
+                            try {
+                                const session = await window.ai.languageModel.create();
+                                log('✅ SESSION CREATED SUCCESSFULLY!', 'success');
+                                log('Trying a simple prompt...', 'warning');
+
+                                const result = await session.prompt('Say hello');
+                                log(`✅ PROMPT WORKED! Response: "${result}"`, 'success');
+
+                            } catch (e) {
+                                log(`❌ Session creation failed: ${e.message}`, 'error');
+                            }
+                        } else if (caps.available === 'after-download') {
+                            log('⚠️ Model needs to be downloaded', 'warning');
+                            log('Try: await ai.languageModel.create() to trigger download', 'warning');
+                        }
+                    } catch (e) {
+                        log(`❌ Error checking capabilities: ${e.message}`, 'error');
+                    }
+                } else {
+                    log('❌ languageModel API not found', 'error');
+                }
+
+                // Check Writer API
+                if (window.ai.writer) {
+                    try {
+                        const caps = await window.ai.writer.capabilities();
+                        log(`✅ writer API: ${caps.available}`,
+                            caps.available === 'no' ? 'error' : 'success');
+                    } catch (e) {
+                        log(`❌ writer API error: ${e.message}`, 'error');
+                    }
+                } else {
+                    log('❌ writer API not found', 'error');
+                }
+
+                // Check Rewriter API
+                if (window.ai.rewriter) {
+                    try {
+                        const caps = await window.ai.rewriter.capabilities();
+                        log(`✅ rewriter API: ${caps.available}`,
+                            caps.available === 'no' ? 'error' : 'success');
+                    } catch (e) {
+                        log(`❌ rewriter API error: ${e.message}`, 'error');
+                    }
+                } else {
+                    log('❌ rewriter API not found', 'error');
+                }
+
+            } else {
+                log('❌ window.ai is UNDEFINED', 'error');
+                log('\n=== TROUBLESHOOTING ===', 'warning');
+                log('1. Go to chrome://flags', 'warning');
+                log('2. Search: "Optimization Guide On Device Model"', 'warning');
+                log('3. Set to: "Enabled BypassPerfRequirement"', 'warning');
+                log('4. Enable these flags:', 'warning');
+                log('   - #prompt-api-for-gemini-nano', 'warning');
+                log('   - #summarization-api-for-gemini-nano', 'warning');
+                log('   - #writer-api-for-gemini-nano', 'warning');
+                log('   - #rewriter-api-for-gemini-nano', 'warning');
+                log('5. FULLY QUIT Chrome (Cmd+Q / Alt+F4)', 'warning');
+                log('6. Restart Chrome Canary', 'warning');
+                log('7. Check chrome://components for model', 'warning');
+            }
+
+            log('\n=== STEP 4: Flag Check ===');
+            log('To verify flags are enabled:', 'warning');
+            log('1. Open: chrome://version', 'warning');
+            log('2. Check Command Line includes AI flags', 'warning');
+            log('3. Go to: chrome://components', 'warning');
+            log('4. Look for "Optimization Guide On Device Model"', 'warning');
+        }
+
+        // Run diagnostics immediately
+        runDiagnostics();
+    </script>
+</body>
+</html>

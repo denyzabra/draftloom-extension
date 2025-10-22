@@ -86,19 +86,10 @@ module.exports = [
         },
       ],
     },
-  },
-  // copy assets
-  {
-    entry: './src/App.js',
-    output: {
-      path: path.resolve(__dirname, 'dist'),
-    },
     plugins: [
       new CopyPlugin({
         patterns: [
           { from: 'public', to: '.' },
-          { from: 'src/apis', to: 'apis' },
-          { from: 'src/utils', to: 'utils' },
         ],
       }),
     ],

@@ -30,19 +30,23 @@ document.addEventListener('DOMContentLoaded', () => {
     openSidebarBtn.addEventListener('click', async () => {
       console.log('Open Sidebar button clicked');
       try {
-        // Get the current active tab
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab) {
-          // Open the sidebar in a new tab or window
-          chrome.windows.create({
-            url: chrome.runtime.getURL('sidebar.html'),
-            type: 'popup',
-            width: 420,
-            height: 700
-          });
-        }
+        // Get the current window
+        const window = await chrome.windows.getCurrent();
+
+        // Open the side panel
+        await chrome.sidePanel.open({ windowId: window.id });
+
+        // Close the popup
+        window.close();
       } catch (error) {
         console.error('Error opening sidebar:', error);
+        // Fallback: open in new window if sidePanel API not available
+        chrome.windows.create({
+          url: chrome.runtime.getURL('sidebar.html'),
+          type: 'popup',
+          width: 420,
+          height: 700
+        });
       }
     });
   }
