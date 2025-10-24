@@ -10,6 +10,15 @@ class GeminiAPI {
         this.baseURL = 'https://generativelanguage.googleapis.com/v1beta/models';
         this.model = 'gemini-1.5-flash-latest'; // Fast, free tier available
         this.isConfigured = false;
+
+        // Rate limiting
+        this.requestCount = 0;
+        this.requestWindow = 60000; // 1 minute
+        this.maxRequestsPerWindow = 15; // 15 requests per minute
+        this.lastResetTime = Date.now();
+
+        // Input limits
+        this.maxInputLength = 30000; // ~30k characters max
     }
 
     /**
@@ -35,8 +44,14 @@ class GeminiAPI {
      * Set and save API key
      */
     async setApiKey(key) {
-        this.apiKey = key;
-        await chrome.storage.local.set({ geminiApiKey: key });
+        // Validate and sanitize key
+        const sanitizedKey = key?.trim();
+        if (!sanitizedKey || !this._isValidApiKey(sanitizedKey)) {
+            throw new Error('Invalid API key format. Expected format: AIza...');
+        }
+
+        this.apiKey = sanitizedKey;
+        await chrome.storage.local.set({ geminiApiKey: sanitizedKey });
         this.isConfigured = true;
         console.log('✅ Gemini API key saved');
     }
@@ -64,12 +79,24 @@ class GeminiAPI {
             throw new Error('Gemini API key not configured');
         }
 
-        const url = `${this.baseURL}/${this.model}:generateContent?key=${this.apiKey}`;
+        // Validate API key format
+        if (!this._isValidApiKey(this.apiKey)) {
+            throw new Error('Invalid API key format');
+        }
+
+        // Check rate limiting
+        this._checkRateLimit();
+
+        // Validate input length
+        this._validateInputLength(prompt);
+
+        const url = `${this.baseURL}/${this.model}:generateContent`;
 
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'x-goog-api-key': this.apiKey
             },
             body: JSON.stringify({
                 contents: [{
@@ -87,8 +114,15 @@ class GeminiAPI {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error?.message || 'Gemini API request failed');
+            let errorMessage = 'Gemini API request failed';
+            try {
+                const error = await response.json();
+                errorMessage = error.error?.message || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use status text
+                errorMessage = `${errorMessage}: ${response.status} ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
@@ -105,10 +139,16 @@ class GeminiAPI {
      */
     async analyzePrompt(prompt) {
         try {
+            // Sanitize input
+            const sanitizedPrompt = this._sanitizeInput(prompt);
+            if (!sanitizedPrompt) {
+                throw new Error('Invalid or empty prompt provided');
+            }
+
             const systemPrompt = `You are an experienced educator analyzing a student's assignment prompt.
 
 ASSIGNMENT PROMPT:
-"${prompt}"
+"${sanitizedPrompt}"
 
 Please provide a structured analysis with:
 
@@ -142,10 +182,18 @@ Format your response clearly and concisely with markdown formatting.`;
      */
     async generateDraft(title, outline) {
         try {
-            const systemPrompt = `Write a well-structured academic essay draft on: "${title}"
+            // Sanitize inputs
+            const sanitizedTitle = this._sanitizeInput(title);
+            const sanitizedOutline = this._sanitizeInput(outline);
+
+            if (!sanitizedTitle || !sanitizedOutline) {
+                throw new Error('Invalid or empty title/outline provided');
+            }
+
+            const systemPrompt = `Write a well-structured academic essay draft on: "${sanitizedTitle}"
 
 Follow this outline:
-${outline}
+${sanitizedOutline}
 
 Requirements:
 - Include a clear introduction with thesis statement
@@ -182,22 +230,32 @@ Generate the complete essay now:`;
      */
     async rewriteText(text, tone) {
         try {
+            // Sanitize inputs
+            const sanitizedText = this._sanitizeInput(text);
+            const sanitizedTone = tone?.toLowerCase().trim();
+
+            if (!sanitizedText) {
+                throw new Error('Invalid or empty text provided');
+            }
+
             const toneDescriptions = {
                 academic: 'formal academic tone with sophisticated vocabulary, avoiding contractions and casual language',
                 professional: 'professional business tone that is clear, concise, and authoritative',
                 casual: 'friendly, conversational tone with natural flow'
             };
 
-            const systemPrompt = `Rewrite the following text in a ${toneDescriptions[tone] || toneDescriptions.academic}.
+            const validTone = toneDescriptions[sanitizedTone] ? sanitizedTone : 'academic';
+
+            const systemPrompt = `Rewrite the following text in a ${toneDescriptions[validTone]}.
 
 Original text:
-"${text}"
+"${sanitizedText}"
 
 Requirements:
 - Maintain the same core meaning and ideas
 - Keep similar length (±10% word count)
 - Ensure smooth flow and readability
-- Use appropriate vocabulary for ${tone} style
+- Use appropriate vocabulary for ${validTone} style
 
 Provide ONLY the rewritten text, no explanations:`;
 
@@ -224,9 +282,15 @@ Provide ONLY the rewritten text, no explanations:`;
      */
     async proofread(text) {
         try {
+            // Sanitize input
+            const sanitizedText = this._sanitizeInput(text);
+            if (!sanitizedText) {
+                throw new Error('Invalid or empty text provided');
+            }
+
             const systemPrompt = `Proofread the following text and identify grammar, spelling, punctuation, and style issues:
 
-"${text}"
+"${sanitizedText}"
 
 For each issue found, provide in this exact format:
 TYPE: [grammar/spelling/punctuation/style]
@@ -242,7 +306,7 @@ Now analyze the text:`;
             const analysis = await this.makeRequest(systemPrompt, 0.3, 1024);
 
             // Parse the response
-            const corrections = this._parseProofreadResponse(analysis, text);
+            const corrections = this._parseProofreadResponse(analysis);
 
             return {
                 success: true,
@@ -270,7 +334,7 @@ Now analyze the text:`;
     /**
      * Parse proofread response into structured corrections
      */
-    _parseProofreadResponse(response, originalText) {
+    _parseProofreadResponse(response) {
         if (response.includes('NO ERRORS FOUND')) {
             return [];
         }
@@ -317,6 +381,67 @@ Now analyze the text:`;
             acc[value] = (acc[value] || 0) + 1;
             return acc;
         }, {});
+    }
+
+    /**
+     * Validate API key format
+     * @private
+     */
+    _isValidApiKey(key) {
+        if (!key || typeof key !== 'string') return false;
+        // Google API keys start with 'AIza' and are 39 characters
+        return /^AIza[0-9A-Za-z_-]{35}$/.test(key);
+    }
+
+    /**
+     * Check and enforce rate limiting
+     * @private
+     */
+    _checkRateLimit() {
+        const now = Date.now();
+
+        // Reset counter if window has passed
+        if (now - this.lastResetTime >= this.requestWindow) {
+            this.requestCount = 0;
+            this.lastResetTime = now;
+        }
+
+        // Check if limit exceeded
+        if (this.requestCount >= this.maxRequestsPerWindow) {
+            const timeUntilReset = this.requestWindow - (now - this.lastResetTime);
+            throw new Error(`Rate limit exceeded. Please wait ${Math.ceil(timeUntilReset / 1000)} seconds.`);
+        }
+
+        this.requestCount++;
+    }
+
+    /**
+     * Sanitize input to prevent prompt injection
+     * @private
+     */
+    _sanitizeInput(input) {
+        if (!input || typeof input !== 'string') return '';
+
+        // Remove potentially dangerous control characters
+        let sanitized = input.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '');
+
+        // Escape any potential prompt injection patterns
+        // Remove multiple system-like instructions
+        sanitized = sanitized.replace(/\n{3,}/g, '\n\n'); // Limit consecutive newlines
+
+        return sanitized.trim();
+    }
+
+    /**
+     * Validate input length
+     * @private
+     */
+    _validateInputLength(input) {
+        if (!input) return true;
+        if (input.length > this.maxInputLength) {
+            throw new Error(`Input too long. Maximum ${this.maxInputLength} characters allowed (got ${input.length}).`);
+        }
+        return true;
     }
 }
 

@@ -80,35 +80,42 @@ class APIManager {
     }
 
     async _processQueue() {
-        if (this.isProcessing || this.requestQueue.length === 0) return;
+        // Use a lock to prevent race conditions
+        if (this.isProcessing) return;
+
+        // Check again after acquiring the lock
+        if (this.requestQueue.length === 0) return;
 
         this.isProcessing = true;
 
-        while (this.requestQueue.length > 0) {
-            const request = this.requestQueue.shift();
+        try {
+            while (this.requestQueue.length > 0) {
+                const request = this.requestQueue.shift();
 
-            // small delay before processing each request
-            await new Promise(resolve => setTimeout(resolve, 100));
+                // small delay before processing each request
+                await new Promise(resolve => setTimeout(resolve, 100));
 
-            try {
-                const api = this.apis[request.apiName];
-                if (!api) {
-                    throw new Error(`API not found: ${request.apiName}`);
+                try {
+                    const api = this.apis[request.apiName];
+                    if (!api) {
+                        throw new Error(`API not found: ${request.apiName}`);
+                    }
+
+                    const method = api[request.methodName];
+                    if (!method) {
+                        throw new Error(`Method not found: ${request.methodName}`);
+                    }
+
+                    const result = await method.apply(api, request.args);
+                    request.resolve(result);
+                } catch (error) {
+                    request.reject(error);
                 }
-
-                const method = api[request.methodName];
-                if (!method) {
-                    throw new Error(`Method not found: ${request.methodName}`);
-                }
-
-                const result = await method.apply(api, request.args);
-                request.resolve(result);
-            } catch (error) {
-                request.reject(error);
             }
+        } finally {
+            // Always release the lock, even if an error occurs
+            this.isProcessing = false;
         }
-
-        this.isProcessing = false;
     }
 
     /**

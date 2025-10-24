@@ -7,8 +7,8 @@ class FerpaChecker {
     constructor() {
         // Patterns for detecting PII (Personally Identifiable Information)
         this.patterns = {
-            // Social Security Numbers
-            ssn: /\b\d{3}-\d{2}-\d{4}\b|\b\d{9}\b/,
+            // Social Security Numbers (various formats, not just 9 digits)
+            ssn: /\b\d{3}[-.\s]\d{2}[-.\s]\d{4}\b/,
 
             // Student ID patterns (common formats)
             studentId: /\b(?:student\s*(?:id|number|#)|id\s*(?:number|#)?)[:\s]*[A-Z0-9]{6,12}\b/i,
@@ -91,10 +91,14 @@ class FerpaChecker {
         // Calculate compliance score (0-100)
         const score = this._calculateComplianceScore(violations);
 
+        // Check if there are any critical violations
+        const hasCriticalViolations = violations.some(v => v.severity === 'critical');
+
         return {
-            compliant: violations.length === 0 || score >= 80,
+            compliant: violations.length === 0 || (!hasCriticalViolations && score >= 90),
             violations,
             score,
+            hasCriticalViolations,
             timestamp: Date.now(),
         };
     }

@@ -7,6 +7,10 @@ class SessionStore {
         this.currentSession = null;
         this.storageKey = 'draftloom_session';
         this.draftsKey = 'draftloom_drafts';
+        this.dataRetentionDays = 30; // Default 30 days retention
+
+        // Start cleanup interval
+        this.startDataRetentionCleanup();
     }
 
     async getOrCreateSession() {
@@ -127,7 +131,7 @@ class SessionStore {
     }
 
     _generateId() {
-        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     }
 
     getSessionInfo() {
@@ -137,6 +141,61 @@ class SessionStore {
             lastAccess: this.currentSession?.lastAccess,
             draftCount: this.currentSession?.drafts?.length || 0,
         };
+    }
+
+    /**
+     * Clean up old drafts based on retention policy
+     */
+    async cleanOldData() {
+        if (!this.currentSession) {
+            await this.getOrCreateSession();
+        }
+
+        const retentionMs = this.dataRetentionDays * 24 * 60 * 60 * 1000;
+        const cutoffTime = Date.now() - retentionMs;
+
+        // Remove drafts older than retention period
+        if (this.currentSession && this.currentSession.drafts) {
+            const initialCount = this.currentSession.drafts.length;
+            this.currentSession.drafts = this.currentSession.drafts.filter(
+                draft => draft.createdAt > cutoffTime
+            );
+
+            const removedCount = initialCount - this.currentSession.drafts.length;
+            if (removedCount > 0) {
+                console.log(`🧹 Cleaned ${removedCount} old drafts (retention: ${this.dataRetentionDays} days)`);
+                await this.saveSession();
+            }
+        }
+    }
+
+    /**
+     * Start periodic data retention cleanup
+     * @private
+     */
+    startDataRetentionCleanup() {
+        // Clean old data once per day
+        this.cleanupInterval = setInterval(() => {
+            this.cleanOldData().catch(err => {
+                console.error('Error during data retention cleanup:', err);
+            });
+        }, 24 * 60 * 60 * 1000);
+
+        // Also run cleanup on initialization (after a short delay)
+        setTimeout(() => {
+            this.cleanOldData().catch(err => {
+                console.error('Error during initial data retention cleanup:', err);
+            });
+        }, 5000);
+    }
+
+    /**
+     * Stop the cleanup interval
+     */
+    stopCleanup() {
+        if (this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+        }
     }
 }
 
