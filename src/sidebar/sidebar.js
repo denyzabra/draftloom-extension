@@ -436,9 +436,7 @@ ${availableCount}/6 Chrome AI APIs available
                     content: draft.draft,
                 });
 
-                this.showSuccess(`✨ Draft generated! (${draft.wordCount} words)`);
-
-                // 🎉 Trigger celebration!
+                // 🎉 Trigger celebration! (replaces success notification)
                 this.celebrate(`🎉 Draft Complete! ${draft.wordCount} words written!`);
             } else {
                 this.elements.draftOutput.innerHTML = '';
@@ -614,7 +612,8 @@ ${availableCount}/6 Chrome AI APIs available
     }
 
     _formatOutput(text) {
-        return `<div class="formatted-output">${text.replace(/\n/g, '<br>')}</div>`;
+        // Sanitize text to prevent XSS before inserting into HTML
+        return `<div class="formatted-output">${this._escapeHtml(text).replace(/\n/g, '<br>')}</div>`;
     }
 
     _escapeHtml(text) {
@@ -1149,11 +1148,32 @@ Sarah Chen`;
 
 }
 
+// Global error handlers to prevent [object Object] errors
+window.addEventListener('error', (event) => {
+    console.error('Global error caught:', event.error?.message || event.message || 'Unknown error');
+    event.preventDefault(); // Prevent Chrome from logging it
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason?.message || event.reason || 'Unknown rejection');
+    event.preventDefault(); // Prevent Chrome from logging it
+});
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => new SidebarController());
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            new SidebarController();
+        } catch (error) {
+            console.error('Failed to initialize sidebar:', error?.message || error);
+        }
+    });
 } else {
-    new SidebarController();
+    try {
+        new SidebarController();
+    } catch (error) {
+        console.error('Failed to initialize sidebar:', error?.message || error);
+    }
 }
 
 // Global utility

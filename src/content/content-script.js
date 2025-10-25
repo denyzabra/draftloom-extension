@@ -13,20 +13,28 @@ const aiSessions = {
 function init() {
   console.log('DraftLoom: Initializing content script');
 
-  // Check if window.ai is available
-  if ('ai' in window) {
-    console.log('✅ window.ai is available in content script!');
-    initializeAISessions();
-  } else {
-    console.warn('⚠️ window.ai not available in content script');
+  try {
+    // Check if window.ai is available
+    if ('ai' in window) {
+      console.log('✅ window.ai is available in content script!');
+      initializeAISessions();
+    } else {
+      console.warn('⚠️ window.ai not available in content script');
+    }
+
+    // Add event listeners for text input areas (only if querySelectorAll exists)
+    if (document.querySelectorAll) {
+      const textAreas = document.querySelectorAll('textarea, [contenteditable="true"]');
+
+      if (textAreas && textAreas.length > 0) {
+        textAreas.forEach((element) => {
+          element.addEventListener('focus', handleTextAreaFocus);
+        });
+      }
+    }
+  } catch (error) {
+    console.error('DraftLoom init error:', error);
   }
-
-  // Add event listeners for text input areas
-  const textAreas = document.querySelectorAll('textarea, [contenteditable="true"]');
-
-  textAreas.forEach((element) => {
-    element.addEventListener('focus', handleTextAreaFocus);
-  });
 }
 
 // Initialize AI sessions

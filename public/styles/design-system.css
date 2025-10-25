@@ -31,36 +31,36 @@
     --dl-info-light: #DBEAFE;         /* Light blue background */
 
     /* ========================================
-       NEUTRAL COLORS
+       NEUTRAL COLORS (Softer palette matching mockups)
        ======================================== */
     --dl-white: #FFFFFF;
-    --dl-gray-50: #F9FAFB;
-    --dl-gray-100: #F3F4F6;
-    --dl-gray-200: #E5E7EB;
-    --dl-gray-300: #D1D5DB;
-    --dl-gray-400: #9CA3AF;
-    --dl-gray-500: #6B7280;
-    --dl-gray-600: #4B5563;
-    --dl-gray-700: #374151;
-    --dl-gray-800: #1F2937;
-    --dl-gray-900: #111827;
+    --dl-gray-50: #FAFAFA;
+    --dl-gray-100: #F5F5F5;            /* Lighter backgrounds */
+    --dl-gray-200: #EEEEEE;            /* Softer borders */
+    --dl-gray-300: #E0E0E0;
+    --dl-gray-400: #BDBDBD;
+    --dl-gray-500: #9E9E9E;
+    --dl-gray-600: #757575;
+    --dl-gray-700: #616161;
+    --dl-gray-800: #424242;
+    --dl-gray-900: #212121;
     --dl-black: #000000;
 
     /* ========================================
        BACKGROUND COLORS
        ======================================== */
     --dl-bg-primary: #FFFFFF;
-    --dl-bg-secondary: #F9FAFB;
-    --dl-bg-tertiary: #F3F4F6;
+    --dl-bg-secondary: #FAFAFA;        /* Very light gray */
+    --dl-bg-tertiary: #F5F5F5;         /* Slightly darker */
     --dl-bg-dark: #1A2766;
     --dl-bg-overlay: rgba(26, 39, 102, 0.5);
 
     /* ========================================
        TEXT COLORS
        ======================================== */
-    --dl-text-primary: #111827;
-    --dl-text-secondary: #6B7280;
-    --dl-text-tertiary: #9CA3AF;
+    --dl-text-primary: #1A1A1A;        /* Softer black */
+    --dl-text-secondary: #757575;      /* Lighter gray */
+    --dl-text-tertiary: #BDBDBD;       /* Very light gray */
     --dl-text-inverse: #FFFFFF;
     --dl-text-link: #00B8D4;
     --dl-text-link-hover: #0097A7;
@@ -68,9 +68,9 @@
     /* ========================================
        BORDER COLORS
        ======================================== */
-    --dl-border-light: #E5E7EB;
-    --dl-border-medium: #D1D5DB;
-    --dl-border-dark: #9CA3AF;
+    --dl-border-light: #EEEEEE;        /* Very soft */
+    --dl-border-medium: #E0E0E0;       /* Soft */
+    --dl-border-dark: #BDBDBD;         /* Medium */
     --dl-border-focus: #00B8D4;
 
     /* ========================================
@@ -102,43 +102,44 @@
     --dl-leading-relaxed: 1.75;
 
     /* ========================================
-       SPACING SCALE
+       SPACING SCALE (More generous for airy feel)
        ======================================== */
     --dl-space-0: 0;
     --dl-space-1: 4px;
     --dl-space-2: 8px;
     --dl-space-3: 12px;
-    --dl-space-4: 16px;
-    --dl-space-5: 20px;
-    --dl-space-6: 24px;
-    --dl-space-8: 32px;
-    --dl-space-10: 40px;
-    --dl-space-12: 48px;
-    --dl-space-16: 64px;
+    --dl-space-4: 20px;            /* Increased from 16px */
+    --dl-space-5: 24px;            /* Increased from 20px */
+    --dl-space-6: 28px;            /* Increased from 24px */
+    --dl-space-8: 36px;            /* Increased from 32px */
+    --dl-space-10: 44px;           /* Increased from 40px */
+    --dl-space-12: 52px;           /* Increased from 48px */
+    --dl-space-16: 68px;           /* Increased from 64px */
 
     /* ========================================
-       BORDER RADIUS
+       BORDER RADIUS (More rounded, softer)
        ======================================== */
     --dl-radius-none: 0;
-    --dl-radius-sm: 4px;
-    --dl-radius-md: 8px;
-    --dl-radius-lg: 12px;
-    --dl-radius-xl: 16px;
-    --dl-radius-2xl: 24px;
+    --dl-radius-sm: 6px;           /* Increased from 4px */
+    --dl-radius-md: 12px;          /* Increased from 8px */
+    --dl-radius-lg: 16px;          /* Increased from 12px */
+    --dl-radius-xl: 20px;          /* Increased from 16px */
+    --dl-radius-2xl: 28px;         /* Increased from 24px */
+    --dl-radius-3xl: 32px;         /* New for cards */
     --dl-radius-full: 9999px;
 
     /* ========================================
-       SHADOWS
+       SHADOWS (Softer, more subtle)
        ======================================== */
-    --dl-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --dl-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-    --dl-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
-    --dl-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-    --dl-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+    --dl-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+    --dl-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+    --dl-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.05);
+    --dl-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.06);
+    --dl-shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.08);
 
     /* Brand shadows with teal tint */
-    --dl-shadow-teal: 0 4px 12px rgba(0, 184, 212, 0.2);
-    --dl-shadow-teal-lg: 0 8px 24px rgba(0, 184, 212, 0.25);
+    --dl-shadow-teal: 0 4px 12px rgba(0, 184, 212, 0.15);
+    --dl-shadow-teal-lg: 0 8px 24px rgba(0, 184, 212, 0.2);
 
     /* ========================================
        TRANSITIONS
@@ -167,14 +168,14 @@
     align-items: center;
     justify-content: center;
     gap: var(--dl-space-2);
-    padding: var(--dl-space-3) var(--dl-space-6);
+    padding: 14px 28px;                /* More generous padding */
     border: none;
-    border-radius: var(--dl-radius-2xl);
+    border-radius: var(--dl-radius-full);  /* Fully rounded pill shape */
     font-family: var(--dl-font-sans);
     font-size: var(--dl-text-sm);
     font-weight: var(--dl-font-medium);
     cursor: pointer;
-    transition: all var(--dl-transition-fast);
+    transition: all var(--dl-transition-base);
     outline: none;
     text-decoration: none;
 }
@@ -185,15 +186,15 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--dl-teal-500) 0%, var(--dl-teal-600) 100%);
+    background: linear-gradient(135deg, #2E7D33 0%, #1B5E20 100%);  /* Green gradient like mockup */
     color: var(--dl-text-inverse);
-    box-shadow: var(--dl-shadow-teal);
+    box-shadow: var(--dl-shadow-md);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--dl-teal-600) 0%, var(--dl-teal-700) 100%);
-    box-shadow: var(--dl-shadow-teal-lg);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #1B5E20 0%, #0D4715 100%);
+    box-shadow: var(--dl-shadow-lg);
+    transform: translateY(-2px);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -203,14 +204,15 @@
 
 .btn-secondary {
     background: var(--dl-white);
-    color: var(--dl-teal-600);
-    border: 2px solid var(--dl-teal-500);
+    color: var(--dl-text-secondary);
+    border: 2px solid var(--dl-gray-200);  /* Softer border */
     box-shadow: var(--dl-shadow-sm);
 }
 
 .btn-secondary:hover:not(:disabled) {
     background: var(--dl-gray-50);
-    border-color: var(--dl-teal-600);
+    border-color: var(--dl-gray-300);
+    box-shadow: var(--dl-shadow-md);
 }
 
 .btn-ghost {
