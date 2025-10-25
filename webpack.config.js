@@ -68,6 +68,7 @@ module.exports = [
     entry: {
       popup: './src/popup/popup.js',
       sidebar: './src/sidebar/sidebar.js',
+      welcome: './src/welcome/welcome.js',
     },
     output: {
       path: path.resolve(__dirname, 'dist'),

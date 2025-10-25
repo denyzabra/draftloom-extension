@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DraftLoom - Writing Assistant</title>
-    <link rel="stylesheet" href="styles/sidebar.css">
+    <link rel="stylesheet" href="styles/design-system.css">
     <link rel="stylesheet" href="styles/shared.css">
+    <link rel="stylesheet" href="styles/sidebar.css">
 </head>
 <body>
     <div id="sidebar-app">
@@ -13,6 +14,21 @@
             <h1>DraftLoom</h1>
             <button id="close-sidebar" class="btn-icon">✕</button>
         </header>
+
+        <!-- AI Status Badge -->
+        <div id="ai-status-banner" class="ai-status-banner">
+            <div class="status-content">
+                <span class="status-icon">🤖</span>
+                <div class="status-text">
+                    <span class="status-title" id="status-title">Loading...</span>
+                    <span class="status-subtitle" id="status-subtitle"></span>
+                </div>
+            </div>
+            <button id="status-action-btn" class="status-action-btn" style="display: none;">Setup Guide</button>
+        </div>
+
+        <!-- Privacy/FERPA Alert (dynamically shown) -->
+        <div id="privacy-alert-container" style="display: none;"></div>
 
         <nav class="tabs">
             <button class="tab-btn active" data-tab="brainstorm">Brainstorm</button>
@@ -27,6 +43,18 @@
             <!-- Brainstorm Tab -->
             <div id="brainstorm-tab" class="tab-content active">
                 <h2>Essay Brainstorming</h2>
+
+                <!-- Quick Examples -->
+                <div class="sample-buttons">
+                    <p class="text-sm text-secondary mb-2">💡 Try these examples:</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                        <button class="btn btn-secondary btn-sm load-sample" data-sample="social-media">Social Media Impact</button>
+                        <button class="btn btn-secondary btn-sm load-sample" data-sample="climate-change">Climate Change</button>
+                        <button class="btn btn-secondary btn-sm load-sample" data-sample="book-analysis">Book Analysis</button>
+                        <button class="btn btn-secondary btn-sm load-sample" data-sample="lab-report">Lab Report</button>
+                    </div>
+                </div>
+
                 <textarea id="prompt-input" placeholder="Paste your assignment prompt here..." rows="4"></textarea>
                 <button id="analyze-prompt" class="btn btn-primary">Analyze Prompt</button>
                 <div id="prompt-analysis" class="output-box"></div>
@@ -35,6 +63,16 @@
             <!-- Draft Tab -->
             <div id="draft-tab" class="tab-content">
                 <h2>Generate Draft</h2>
+
+                <!-- Quick Examples -->
+                <div class="sample-buttons">
+                    <p class="text-sm text-secondary mb-2">💡 Try these examples:</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                        <button class="btn btn-secondary btn-sm load-draft-sample" data-sample="essay-outline">Essay Outline</button>
+                        <button class="btn btn-secondary btn-sm load-draft-sample" data-sample="quick-notes">Quick Notes</button>
+                    </div>
+                </div>
+
                 <textarea id="draft-input" placeholder="Your ideas and notes..." rows="4"></textarea>
                 <button id="generate-draft" class="btn btn-primary">Generate Draft</button>
                 <div id="draft-output" class="output-box"></div>
@@ -43,6 +81,13 @@
             <!-- Rewrite Tab -->
             <div id="rewrite-tab" class="tab-content">
                 <h2>Rewrite & Polish</h2>
+
+                <!-- Quick Examples -->
+                <div class="sample-buttons">
+                    <p class="text-sm text-secondary mb-2">💡 Try this example:</p>
+                    <button class="btn btn-secondary btn-sm load-rewrite-sample mb-2" data-sample="casual-text">Improve This Text</button>
+                </div>
+
                 <div class="control-group">
                     <label>Tone:</label>
                     <select id="tone-select">
@@ -67,6 +112,13 @@
             <!-- Proofread Tab -->
             <div id="proofread-tab" class="tab-content">
                 <h2>Proofread</h2>
+
+                <!-- Quick Examples -->
+                <div class="sample-buttons">
+                    <p class="text-sm text-secondary mb-2">💡 Try this example:</p>
+                    <button class="btn btn-secondary btn-sm load-proofread-sample mb-2" data-sample="errors">Text with Errors</button>
+                </div>
+
                 <textarea id="proofread-input" placeholder="Paste text to proofread..." rows="4"></textarea>
                 <button id="proofread-text" class="btn btn-primary">Check Grammar & Spelling</button>
                 <div id="proofread-output" class="output-box">
@@ -95,24 +147,10 @@
                 </div>
 
                 <div class="settings-section">
-                    <h3>Google Gemini API (Fallback)</h3>
-                    <p class="info-text">When Chrome Built-in AI is unavailable, use Google Gemini API as fallback.</p>
-                    <div class="control-group">
-                        <label>API Key:</label>
-                        <input type="password" id="gemini-api-key" placeholder="Enter your Gemini API key">
-                        <button id="save-gemini-key" class="btn btn-primary" style="margin-top: 10px;">Save Key</button>
-                        <button id="test-gemini-key" class="btn btn-secondary" style="margin-top: 10px;">Test Connection</button>
-                    </div>
-                    <p class="info-text" style="margin-top: 10px;">
-                        <a href="https://aistudio.google.com/app/apikey" target="_blank">Get free API key →</a>
-                    </p>
-                    <div id="gemini-status" class="api-status-container" style="margin-top: 10px;"></div>
-                </div>
-
-                <div class="settings-section">
                     <h3>Privacy & Data</h3>
-                    <p class="info-text">Chrome Built-in AI: All processing happens locally in your browser.</p>
-                    <p class="info-text">Gemini API: Data sent to Google's servers (secure, not used for training).</p>
+                    <p class="info-text">🔒 <strong>100% On-Device Processing:</strong> All AI processing happens locally in your browser using Chrome's Built-in AI.</p>
+                    <p class="info-text">✅ <strong>FERPA Compliant:</strong> Student data never leaves your device. No cloud servers, no data collection.</p>
+                    <p class="info-text">📊 When Chrome AI is unavailable, Demo Mode provides simulated responses for testing the UI.</p>
                     <div class="control-group">
                         <label>
                             <input type="checkbox" id="enable-cache" checked>
@@ -120,6 +158,30 @@
                         </label>
                     </div>
                     <button id="clear-cache" class="btn btn-secondary">Clear Cache</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>🛡️ Privacy Protection Demo</h3>
+                    <p class="info-text">DraftLoom automatically scans for sensitive student information (PII) before processing. Test it below:</p>
+
+                    <div class="privacy-demo-section">
+                        <div class="privacy-demo-title">
+                            <span>🧪 Test Sample</span>
+                        </div>
+                        <p class="text-sm text-secondary mb-2">Click to load sample text with PII:</p>
+                        <button id="load-pii-sample" class="btn btn-secondary btn-sm">Load Sample with PII</button>
+                    </div>
+
+                    <textarea
+                        id="privacy-test-input"
+                        placeholder="Type or paste text here to test privacy protection..."
+                        rows="6"
+                        style="width: 100%; padding: 12px; border: 2px solid var(--dl-gray-300); border-radius: 8px; font-family: inherit; font-size: 14px; margin-top: 12px; resize: vertical;"
+                    ></textarea>
+
+                    <button id="check-privacy-btn" class="btn btn-primary" style="margin-top: 12px; width: 100%;">🔍 Check for PII</button>
+
+                    <div id="privacy-test-result" style="margin-top: 16px;"></div>
                 </div>
 
                 <div class="settings-section">

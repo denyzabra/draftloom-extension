@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to DraftLoom</title>
+    <link rel="stylesheet" href="styles/design-system.css">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--dl-font-sans);
+            background: linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .welcome-container {
+            max-width: 600px;
+            width: 90%;
+            background: var(--dl-white);
+            border-radius: var(--dl-radius-2xl);
+            box-shadow: var(--dl-shadow-xl);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .welcome-header {
+            background: linear-gradient(135deg, var(--dl-navy-500) 0%, var(--dl-navy-600) 100%);
+            color: var(--dl-white);
+            padding: var(--dl-space-8);
+            text-align: center;
+        }
+
+        .logo-container {
+            margin-bottom: var(--dl-space-4);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: var(--dl-white);
+            border-radius: var(--dl-radius-xl);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--dl-shadow-lg);
+        }
+
+        .logo-text {
+            font-size: var(--dl-text-3xl);
+            font-weight: var(--dl-font-bold);
+            margin: 0;
+        }
+
+        .welcome-subtitle {
+            font-size: var(--dl-text-lg);
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .welcome-body {
+            padding: var(--dl-space-8);
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: var(--dl-space-2);
+            margin-bottom: var(--dl-space-6);
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: var(--dl-radius-full);
+            background: var(--dl-gray-300);
+            transition: all var(--dl-transition-base);
+        }
+
+        .step-dot.active {
+            background: var(--dl-teal-500);
+            width: 24px;
+        }
+
+        .step-content {
+            margin-bottom: var(--dl-space-6);
+        }
+
+        .step-title {
+            font-size: var(--dl-text-2xl);
+            font-weight: var(--dl-font-bold);
+            color: var(--dl-navy-600);
+            margin-bottom: var(--dl-space-4);
+        }
+
+        .step-description {
+            color: var(--dl-text-secondary);
+            line-height: var(--dl-leading-relaxed);
+            margin-bottom: var(--dl-space-6);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: var(--dl-space-4) 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--dl-space-3);
+            margin-bottom: var(--dl-space-3);
+            padding: var(--dl-space-3);
+            background: var(--dl-bg-secondary);
+            border-radius: var(--dl-radius-lg);
+        }
+
+        .feature-icon {
+            font-size: var(--dl-text-xl);
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-weight: var(--dl-font-semibold);
+            color: var(--dl-text-primary);
+            margin-bottom: var(--dl-space-1);
+        }
+
+        .feature-desc {
+            font-size: var(--dl-text-sm);
+            color: var(--dl-text-secondary);
+        }
+
+        .setup-steps {
+            background: var(--dl-bg-secondary);
+            border-radius: var(--dl-radius-lg);
+            padding: var(--dl-space-4);
+            margin: var(--dl-space-4) 0;
+        }
+
+        .setup-step {
+            margin-bottom: var(--dl-space-4);
+        }
+
+        .setup-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .setup-step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--dl-teal-500);
+            color: var(--dl-white);
+            border-radius: var(--dl-radius-full);
+            font-size: var(--dl-text-sm);
+            font-weight: var(--dl-font-bold);
+            margin-right: var(--dl-space-2);
+        }
+
+        .setup-step-title {
+            font-weight: var(--dl-font-semibold);
+            color: var(--dl-text-primary);
+            margin-bottom: var(--dl-space-2);
+        }
+
+        .copy-box {
+            display: flex;
+            gap: var(--dl-space-2);
+            margin-top: var(--dl-space-2);
+        }
+
+        .copy-input {
+            flex: 1;
+            padding: var(--dl-space-2) var(--dl-space-3);
+            border: 1px solid var(--dl-border-medium);
+            border-radius: var(--dl-radius-md);
+            font-family: var(--dl-font-mono);
+            font-size: var(--dl-text-sm);
+            background: var(--dl-white);
+        }
+
+        .copy-btn {
+            padding: var(--dl-space-2) var(--dl-space-4);
+            background: var(--dl-teal-500);
+            color: var(--dl-white);
+            border: none;
+            border-radius: var(--dl-radius-md);
+            cursor: pointer;
+            font-size: var(--dl-text-sm);
+            font-weight: var(--dl-font-medium);
+            transition: background var(--dl-transition-fast);
+        }
+
+        .copy-btn:hover {
+            background: var(--dl-teal-600);
+        }
+
+        .actions {
+            display: flex;
+            gap: var(--dl-space-3);
+            justify-content: space-between;
+            margin-top: var(--dl-space-6);
+        }
+
+        .btn-back {
+            color: var(--dl-text-secondary);
+        }
+
+        .success-icon {
+            font-size: 64px;
+            text-align: center;
+            margin: var(--dl-space-6) 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <header class="welcome-header">
+            <div class="logo-container">
+                <div class="logo">
+                    <svg width="48" height="48" viewBox="0 0 100 100" fill="none">
+                        <!-- Simplified logo icon - loom pattern -->
+                        <rect x="20" y="35" width="12" height="30" fill="#00B8D4" rx="2"/>
+                        <rect x="44" y="35" width="12" height="30" fill="#00B8D4" rx="2"/>
+                        <rect x="68" y="35" width="12" height="30" fill="#00B8D4" rx="2"/>
+                        <path d="M30 25 L70 75" stroke="#1A2766" stroke-width="8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="logo-text">DraftLoom</h1>
+            <p class="welcome-subtitle">Your FERPA-Compliant AI Writing Assistant</p>
+        </header>
+
+        <div class="welcome-body">
+            <div class="step-indicator">
+                <div class="step-dot active" data-step="1"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-dot" data-step="3"></div>
+            </div>
+
+            <!-- Step 1: Welcome -->
+            <div class="step active" id="step-1">
+                <div class="step-content">
+                    <h2 class="step-title">Welcome to DraftLoom! 🎓</h2>
+                    <p class="step-description">
+                        The only AI writing assistant built specifically for students and educators,
+                        with 100% on-device processing to protect student privacy.
+                    </p>
+
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <span class="feature-icon">🔒</span>
+                            <div class="feature-text">
+                                <div class="feature-title">100% On-Device Processing</div>
+                                <div class="feature-desc">All AI processing happens locally in your browser. No cloud servers, no data collection.</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✅</span>
+                            <div class="feature-text">
+                                <div class="feature-title">FERPA Compliant</div>
+                                <div class="feature-desc">Built-in protection detects and blocks sensitive student information automatically.</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">⚡</span>
+                            <div class="feature-text">
+                                <div class="feature-title">Powered by Chrome AI</div>
+                                <div class="feature-desc">Uses Chrome's built-in AI models for fast, private, and reliable assistance.</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="actions">
+                    <div></div>
+                    <button class="btn btn-primary" id="get-started-btn">Get Started →</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Setup Chrome AI -->
+            <div class="step" id="step-2">
+                <div class="step-content">
+                    <h2 class="step-title">Enable Chrome AI 🤖</h2>
+                    <p class="step-description">
+                        DraftLoom uses Chrome's built-in AI for 100% on-device processing.
+                        Quick 3-minute setup to unlock full functionality:
+                    </p>
+
+                    <div class="setup-steps">
+                        <div class="setup-step">
+                            <div class="setup-step-title">
+                                <span class="setup-step-number">1</span>
+                                Open Chrome Flags
+                            </div>
+                            <div class="copy-box">
+                                <input type="text" class="copy-input" value="chrome://flags" readonly id="flags-url">
+                                <button class="copy-btn" id="copy-flags-btn" data-target="flags-url">Copy</button>
+                            </div>
+                            <p class="feature-desc" style="margin-top: 8px;">Paste into address bar and press Enter</p>
+                        </div>
+
+                        <div class="setup-step">
+                            <div class="setup-step-title">
+                                <span class="setup-step-number">2</span>
+                                Enable Required Flags
+                            </div>
+                            <p class="feature-desc">Search for and enable these flags:</p>
+                            <ul style="margin: 8px 0; padding-left: 32px;">
+                                <li style="margin: 4px 0;">Prompt API for Gemini Nano</li>
+                                <li style="margin: 4px 0;">Summarization API</li>
+                                <li style="margin: 4px 0;">Rewriter API</li>
+                                <li style="margin: 4px 0;">Translation API</li>
+                            </ul>
+                        </div>
+
+                        <div class="setup-step">
+                            <div class="setup-step-title">
+                                <span class="setup-step-number">3</span>
+                                Restart Chrome
+                            </div>
+                            <p class="feature-desc">Click "Relaunch" button in Chrome to apply changes</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info" style="margin-top: 16px;">
+                        <strong>Note:</strong> After restart, Chrome will download the AI model (~2GB) automatically. This is a one-time download.
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-ghost btn-back" id="step2-back-btn">← Back</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" id="skip-setup-btn">Skip - Use Demo Mode</button>
+                        <button class="btn btn-primary" id="step2-next-btn">I'm Done →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Ready -->
+            <div class="step" id="step-3">
+                <div class="step-content">
+                    <div class="success-icon">🎉</div>
+                    <h2 class="step-title" style="text-align: center;">You're All Set!</h2>
+                    <p class="step-description" style="text-align: center;">
+                        DraftLoom is ready to help you write better essays, reports, and assignments.
+                    </p>
+
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <span class="feature-icon">💡</span>
+                            <div class="feature-text">
+                                <div class="feature-title">Brainstorm Ideas</div>
+                                <div class="feature-desc">Analyze prompts and generate creative ideas for your essays</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✍️</span>
+                            <div class="feature-text">
+                                <div class="feature-title">Generate Drafts</div>
+                                <div class="feature-desc">Create well-structured essay drafts with academic tone</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">🔄</span>
+                            <div class="feature-text">
+                                <div class="feature-title">Rewrite & Polish</div>
+                                <div class="feature-desc">Improve tone, clarity, and style of your writing</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">📝</span>
+                            <div class="feature-text">
+                                <div class="feature-title">Proofread</div>
+                                <div class="feature-desc">Catch grammar, spelling, and punctuation errors</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-ghost btn-back" id="step3-back-btn">← Back</button>
+                    <button class="btn btn-primary" id="finish-btn">Start Writing →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="welcome.js"></script>
+</body>
+</html>

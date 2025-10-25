@@ -44,8 +44,7 @@ class ConsentManager {
             timestamp: Date.now(),
             version: '1.0',
             dataProcessing: options.dataProcessing !== false, // Default true
-            localStorageOnly: options.localStorageOnly !== false, // Default true
-            geminiAPIConsent: options.geminiAPIConsent || false,
+            localStorageOnly: options.localStorageOnly !== false, // Default true (always on-device)
             analyticsConsent: options.analyticsConsent || false,
         };
 
@@ -75,8 +74,7 @@ class ConsentManager {
                     // Clear all app data
                     await chrome.storage.local.remove([
                         'draftloom_session',
-                        'draftloom_drafts',
-                        'geminiApiKey'
+                        'draftloom_drafts'
                     ]);
                 }
             }
@@ -132,16 +130,6 @@ class ConsentManager {
             console.error('Error updating consent:', error);
             return false;
         }
-    }
-
-    /**
-     * Check if user has consented to Gemini API usage
-     */
-    async hasGeminiAPIConsent() {
-        if (!this.consentData) {
-            await this.loadConsent();
-        }
-        return this.consentData?.geminiAPIConsent === true;
     }
 
     /**

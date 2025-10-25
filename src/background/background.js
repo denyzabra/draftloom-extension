@@ -11,7 +11,13 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.storage.local.set({
       userConsent: false,
       consentDate: null,
-      firstInstallDate: Date.now()
+      firstInstallDate: Date.now(),
+      draftloom_onboarding_complete: false
+    });
+
+    // Open welcome page on first install
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('welcome.html')
     });
   } else if (details.reason === 'update') {
     console.log('DraftLoom extension updated');

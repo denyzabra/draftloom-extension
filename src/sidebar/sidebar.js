@@ -9,7 +9,6 @@ import translatorAPI from '../apis/translatorAPI.js';
 import ferpaChecker from '../utils/ferpa-checker.js';
 import cacheStore from '../storage/cache-store.js';
 import contentScriptBridge from '../apis/contentScriptBridge.js';
-import geminiAPI from '../apis/geminiAPI.js';
 import demoAPI from '../apis/demoAPI.js';
 
 class SidebarController {
@@ -19,8 +18,29 @@ class SidebarController {
         this.currentDraft = null;
         this.isProcessing = false;
         this.useDemoMode = false;
-        this.useGeminiAPI = false;
+        this.sampleContent = this.getSampleContent();
         this.init();
+    }
+
+    getSampleContent() {
+        return {
+            prompts: {
+                'social-media': 'Write a 1000-word argumentative essay analyzing the impact of social media on teenage mental health. Your essay should include at least three peer-reviewed sources, discuss both positive and negative effects, and propose evidence-based solutions for healthier social media use among adolescents.',
+                'climate-change': 'Compose a research paper examining the effectiveness of renewable energy policies in reducing carbon emissions. Your analysis should compare at least three different countries, evaluate policy implementation challenges, and provide recommendations for future climate action.',
+                'book-analysis': 'Write a literary analysis essay on the theme of injustice in "To Kill a Mockingbird" by Harper Lee. Discuss how the author uses symbolism, character development, and plot structure to convey her message about racial inequality in the American South.',
+                'lab-report': 'Write a formal lab report on the effect of pH levels on enzyme activity. Include an introduction with hypothesis, materials and methods, results with data tables, discussion of findings, and conclusion with potential sources of error.'
+            },
+            draftIdeas: {
+                'essay-outline': 'Topic: The Role of Artificial Intelligence in Education\n\nThesis: While AI can enhance personalized learning, educators must maintain their central role in developing critical thinking and emotional intelligence in students.\n\nMain Points:\n1. AI benefits: Personalized learning paths, instant feedback, accessibility\n2. Limitations: Lack of emotional understanding, potential bias, privacy concerns\n3. Teacher role: Facilitating discussions, developing creativity, building relationships\n4. Balanced approach: Combining AI tools with human instruction',
+                'quick-notes': 'AI in education - personalized learning good but need teachers for critical thinking - examples of AI tutors - concerns about data privacy - conclusion: use AI as tool not replacement'
+            },
+            rewriteSamples: {
+                'casual-text': 'Social media is really bad for teens mental health because they compare themselves to others all the time and it makes them feel sad and anxious. Also they spend way too much time on their phones instead of doing other stuff.'
+            },
+            proofreadSamples: {
+                'errors': 'Their are many benifits to studying abroad. Firstly, it helps students to develope independence and adaptibility. Secondly, they gets exposure to different cultures and perpectives. Finally, it improves there language skills and comunication abilitys.'
+            }
+        };
     }
 
     async init() {
@@ -41,61 +61,51 @@ class SidebarController {
             console.log('🔄 Checking content script bridge...');
             const bridgeStatus = await contentScriptBridge.checkAvailability();
 
-            // Check Gemini API availability
-            await geminiAPI.initialize();
-            const geminiStatus = await geminiAPI.checkAvailability();
-
             if (availableCount === 0 && !bridgeStatus.available) {
-                // No Chrome AI available - check for Gemini API
-                if (geminiStatus.available) {
-                    this.showSuccess(`✅ AI Powered by Google Gemini API
+                // No Chrome AI available - use Demo Mode
+                this.useDemoMode = true;
+                this.updateStatusBanner('demo', 'Demo Mode Active', 'Chrome AI not available - simulated responses for testing');
+                this.showWarning(`⚙️ Chrome Built-in AI Not Available
 
-Chrome Built-in AI not available, using Gemini API fallback.
-All features working with real AI processing!
-
-🔒 FERPA compliance enabled
-📊 Session management active`);
-                    this.useGeminiAPI = true;
-                    this.useDemoMode = false;
-                } else {
-                    this.showWarning(`⚙️ AI API Configuration Required
-
-Chrome Built-in AI is not available on this browser.
-Please configure Google Gemini API in Settings for real AI processing.
+Chrome Built-in AI is not detected on this browser.
 
 🎯 Currently using Demo Mode (simulated responses)
 ✅ All features functional
 ✅ FERPA compliance enabled
+🔒 100% on-device processing (when Chrome AI is available)
 
-💡 Go to Settings → Configure Gemini API Key`);
-                    this.useDemoMode = true;
-                    this.useGeminiAPI = false;
-                }
+💡 To enable Chrome AI:
+1. Use Chrome 128+ (Canary/Dev recommended)
+2. Enable required flags at chrome://flags
+3. Restart browser
+
+Demo Mode lets you test the UI and features!`);
             } else if (bridgeStatus.available) {
-                this.showSuccess(`✅ AI Features ready via Chrome Built-in AI!
+                this.useDemoMode = false;
+                this.updateStatusBanner('active', 'Chrome AI Active', '100% On-Device • FERPA Protected');
+                this.showSuccess(`✅ AI Features Ready via Chrome Built-in AI!
+
+🔒 100% On-Device Processing
+All student data stays private in your browser.
 
 Navigate to any webpage to use AI features.`);
-                this.useDemoMode = false;
-                this.useGeminiAPI = false;
             } else if (!apiManager.isCriticalReady()) {
-                // Partial availability - use Gemini as fallback
-                if (geminiStatus.available) {
-                    this.showSuccess(`✅ Hybrid Mode Active
+                // Partial availability - use demo mode for missing features
+                this.useDemoMode = true;
+                this.updateStatusBanner('demo', `Partial AI (${availableCount}/6 APIs)`, 'Some features using Demo Mode');
+                this.showWarning(`⚠️ Partial Chrome AI Availability
 
-Chrome AI: ${availableCount}/6 APIs
-Gemini API: Configured ✅
-Missing features will use Gemini API.`);
-                    this.useGeminiAPI = true;
-                    this.useDemoMode = false;
-                } else {
-                    this.showWarning(`Some AI features unavailable (${availableCount}/6 APIs ready). Using demo mode for unavailable features.`);
-                    this.useDemoMode = true;
-                    this.useGeminiAPI = false;
-                }
+${availableCount}/6 Chrome AI APIs detected.
+Missing features will use Demo Mode.
+
+🔒 Available features use 100% on-device processing`);
             } else {
-                this.showSuccess(`✅ All AI features ready (${availableCount}/6 Chrome APIs available)`);
                 this.useDemoMode = false;
-                this.useGeminiAPI = false;
+                this.updateStatusBanner('active', 'All AI Features Ready', `${availableCount}/6 APIs • 100% On-Device`);
+                this.showSuccess(`✅ All AI Features Ready!
+
+${availableCount}/6 Chrome AI APIs available
+🔒 100% On-Device Processing - Student data never leaves your browser`);
             }
 
             // Attach event listeners
@@ -153,13 +163,51 @@ Missing features will use Gemini API.`);
             // Settings Tab
             apiStatus: document.getElementById('api-status'),
             refreshApiStatusBtn: document.getElementById('refresh-api-status'),
-            geminiApiKeyInput: document.getElementById('gemini-api-key'),
-            saveGeminiKeyBtn: document.getElementById('save-gemini-key'),
-            testGeminiKeyBtn: document.getElementById('test-gemini-key'),
-            geminiStatus: document.getElementById('gemini-status'),
             enableCacheCheckbox: document.getElementById('enable-cache'),
             clearCacheBtn: document.getElementById('clear-cache'),
+
+            // AI Status Banner
+            statusBanner: document.getElementById('ai-status-banner'),
+            statusTitle: document.getElementById('status-title'),
+            statusSubtitle: document.getElementById('status-subtitle'),
+            statusActionBtn: document.getElementById('status-action-btn'),
+
+            // Privacy/FERPA Protection
+            privacyAlertContainer: document.getElementById('privacy-alert-container'),
+            privacyTestInput: document.getElementById('privacy-test-input'),
+            checkPrivacyBtn: document.getElementById('check-privacy-btn'),
+            privacyTestResult: document.getElementById('privacy-test-result'),
+            loadPiiSampleBtn: document.getElementById('load-pii-sample'),
         };
+    }
+
+    updateStatusBanner(status, title, subtitle, showActionBtn = false) {
+        if (!this.elements.statusBanner) return;
+
+        // Remove all status classes
+        this.elements.statusBanner.classList.remove('status-active', 'status-demo', 'status-error');
+
+        // Add appropriate status class
+        if (status === 'active') {
+            this.elements.statusBanner.classList.add('status-active');
+        } else if (status === 'demo') {
+            this.elements.statusBanner.classList.add('status-demo');
+        } else if (status === 'error') {
+            this.elements.statusBanner.classList.add('status-error');
+        }
+
+        // Update text
+        if (this.elements.statusTitle) {
+            this.elements.statusTitle.textContent = title;
+        }
+        if (this.elements.statusSubtitle) {
+            this.elements.statusSubtitle.textContent = subtitle;
+        }
+
+        // Show/hide action button
+        if (this.elements.statusActionBtn) {
+            this.elements.statusActionBtn.style.display = showActionBtn ? 'block' : 'none';
+        }
     }
 
     attachEventListeners() {
@@ -177,12 +225,63 @@ Missing features will use Gemini API.`);
 
         // Settings buttons
         this.elements.refreshApiStatusBtn?.addEventListener('click', () => this.refreshAPIStatus());
-        this.elements.saveGeminiKeyBtn?.addEventListener('click', () => this.saveGeminiKey());
-        this.elements.testGeminiKeyBtn?.addEventListener('click', () => this.testGeminiConnection());
         this.elements.clearCacheBtn?.addEventListener('click', () => this.clearCache());
         this.elements.enableCacheCheckbox?.addEventListener('change', (e) => {
             this.toggleCache(e.target.checked);
         });
+
+        // Status banner action button
+        this.elements.statusActionBtn?.addEventListener('click', () => {
+            // Open welcome/setup guide
+            chrome.tabs.create({
+                url: chrome.runtime.getURL('welcome.html')
+            });
+        });
+
+        // Sample content buttons
+        document.querySelectorAll('.load-sample').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const sampleKey = e.target.dataset.sample;
+                if (this.sampleContent.prompts[sampleKey] && this.elements.promptInput) {
+                    this.elements.promptInput.value = this.sampleContent.prompts[sampleKey];
+                    this.elements.promptInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        });
+
+        document.querySelectorAll('.load-draft-sample').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const sampleKey = e.target.dataset.sample;
+                if (this.sampleContent.draftIdeas[sampleKey] && this.elements.draftInput) {
+                    this.elements.draftInput.value = this.sampleContent.draftIdeas[sampleKey];
+                    this.elements.draftInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        });
+
+        document.querySelectorAll('.load-rewrite-sample').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const sampleKey = e.target.dataset.sample;
+                if (this.sampleContent.rewriteSamples[sampleKey] && this.elements.rewriteInput) {
+                    this.elements.rewriteInput.value = this.sampleContent.rewriteSamples[sampleKey];
+                    this.elements.rewriteInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        });
+
+        document.querySelectorAll('.load-proofread-sample').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const sampleKey = e.target.dataset.sample;
+                if (this.sampleContent.proofreadSamples[sampleKey] && this.elements.proofreadInput) {
+                    this.elements.proofreadInput.value = this.sampleContent.proofreadSamples[sampleKey];
+                    this.elements.proofreadInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        });
+
+        // Privacy Protection Demo
+        this.elements.checkPrivacyBtn?.addEventListener('click', () => this.checkPrivacy());
+        this.elements.loadPiiSampleBtn?.addEventListener('click', () => this.loadPiiSample());
     }
 
     setupTabNavigation() {
@@ -236,24 +335,19 @@ Missing features will use Gemini API.`);
 
         this.setButtonLoading(this.elements.analyzePromptBtn, true);
 
+        // Show skeleton loader
+        this.showSkeletonLoader(this.elements.promptAnalysis, 'paragraph');
+
         try {
             // Check cache first
             const cacheKey = cacheStore.getCacheKey('analyzePrompt', { prompt });
             let analysis = cacheStore.get(cacheKey);
 
             if (!analysis) {
-                // Priority: Chrome AI (bridge/direct) → Gemini API → Demo Mode
-                if (this.useDemoMode && !this.useGeminiAPI) {
+                // Priority: Chrome AI (bridge/direct) → Demo Mode
+                if (this.useDemoMode) {
                     console.log('🎯 Using demo mode');
                     analysis = await demoAPI.analyzePrompt(prompt);
-                } else if (this.useGeminiAPI) {
-                    console.log('🌐 Using Gemini API');
-                    try {
-                        analysis = await geminiAPI.analyzePrompt(prompt);
-                    } catch (geminiError) {
-                        console.warn('Gemini API failed, falling back to demo mode:', geminiError);
-                        analysis = await demoAPI.analyzePrompt(prompt);
-                    }
                 } else {
                     try {
                         analysis = await contentScriptBridge.analyzePrompt(prompt);
@@ -264,15 +358,8 @@ Missing features will use Gemini API.`);
                             analysis = await promptAPI.analyzePrompt(prompt);
                             console.log('✅ Used Chrome Built-in AI (direct)');
                         } catch (directError) {
-                            console.warn('Chrome AI failed, trying Gemini API:', directError);
-                            try {
-                                await geminiAPI.initialize();
-                                analysis = await geminiAPI.analyzePrompt(prompt);
-                                console.log('✅ Used Gemini API fallback');
-                            } catch (geminiError) {
-                                console.warn('All APIs failed, using demo mode:', geminiError);
-                                analysis = await demoAPI.analyzePrompt(prompt);
-                            }
+                            console.warn('Chrome AI failed, using demo mode:', directError);
+                            analysis = await demoAPI.analyzePrompt(prompt);
                         }
                     }
                 }
@@ -284,13 +371,15 @@ Missing features will use Gemini API.`);
             }
 
             if (analysis.success) {
-                this.elements.promptAnalysis.innerHTML = this._formatOutput(analysis.analysis);
+                this.hideSkeletonLoader(this.elements.promptAnalysis, this._formatOutput(analysis.analysis));
                 this.showSuccess('Prompt analyzed successfully!');
             } else {
+                this.elements.promptAnalysis.innerHTML = '';
                 this.showError(`Error: ${analysis.error}`);
             }
         } catch (error) {
             console.error('Analysis error:', error);
+            this.elements.promptAnalysis.innerHTML = '';
             this.showError('Failed to analyze prompt. Make sure you have a webpage open.');
         } finally {
             this.setButtonLoading(this.elements.analyzePromptBtn, false);
@@ -314,41 +403,32 @@ Missing features will use Gemini API.`);
 
         this.setButtonLoading(this.elements.generateDraftBtn, true);
 
+        // Show essay skeleton loader
+        this.showSkeletonLoader(this.elements.draftOutput, 'essay');
+
         try {
             let draft;
-            // Priority: Chrome AI → Gemini API → Demo Mode
-            if (this.useDemoMode && !this.useGeminiAPI) {
+            // Priority: Chrome AI → Demo Mode
+            if (this.useDemoMode) {
                 console.log('🎯 Using demo mode');
                 draft = await demoAPI.generateDraft('Student Essay', ideas);
-            } else if (this.useGeminiAPI) {
-                console.log('🌐 Using Gemini API');
-                try {
-                    draft = await geminiAPI.generateDraft('Student Essay', ideas);
-                } catch (geminiError) {
-                    console.warn('Gemini API failed, falling back to demo mode:', geminiError);
-                    draft = await demoAPI.generateDraft('Student Essay', ideas);
-                }
             } else {
                 try {
                     draft = await contentScriptBridge.generateDraft('Student Essay', ideas);
-                    console.log('✅ Used Chrome Built-in AI');
+                    console.log('✅ Used Chrome Built-in AI (content script)');
                 } catch (bridgeError) {
                     try {
                         draft = await writerAPI.generateDraft('Student Essay', ideas, 'academic');
+                        console.log('✅ Used Chrome Built-in AI (direct)');
                     } catch (directError) {
-                        try {
-                            await geminiAPI.initialize();
-                            draft = await geminiAPI.generateDraft('Student Essay', ideas);
-                            console.log('✅ Used Gemini API fallback');
-                        } catch (geminiError) {
-                            draft = await demoAPI.generateDraft('Student Essay', ideas);
-                        }
+                        console.warn('Chrome AI failed, using demo mode:', directError);
+                        draft = await demoAPI.generateDraft('Student Essay', ideas);
                     }
                 }
             }
 
             if (draft.success) {
-                this.elements.draftOutput.innerHTML = this._formatOutput(draft.draft);
+                this.hideSkeletonLoader(this.elements.draftOutput, this._formatOutput(draft.draft));
 
                 // Save draft
                 this.currentDraft = await sessionStore.saveDraft({
@@ -356,12 +436,17 @@ Missing features will use Gemini API.`);
                     content: draft.draft,
                 });
 
-                this.showSuccess(`Draft generated! (${draft.wordCount} words)`);
+                this.showSuccess(`✨ Draft generated! (${draft.wordCount} words)`);
+
+                // 🎉 Trigger celebration!
+                this.celebrate(`🎉 Draft Complete! ${draft.wordCount} words written!`);
             } else {
+                this.elements.draftOutput.innerHTML = '';
                 this.showError(`Error: ${draft.error}`);
             }
         } catch (error) {
             console.error('Draft generation error:', error);
+            this.elements.draftOutput.innerHTML = '';
             this.showError('Failed to generate draft. Make sure you have a webpage open.');
         } finally {
             this.setButtonLoading(this.elements.generateDraftBtn, false);
@@ -383,22 +468,14 @@ Missing features will use Gemini API.`);
         try {
             let result;
 
-            // Priority: Chrome AI → Gemini API → Demo Mode
-            if (this.useDemoMode && !this.useGeminiAPI) {
+            // Priority: Chrome AI → Demo Mode
+            if (this.useDemoMode) {
                 console.log('🎯 Using demo mode');
                 result = await demoAPI.rewriteText(text, tone);
-            } else if (this.useGeminiAPI) {
-                console.log('🌐 Using Gemini API');
-                try {
-                    result = await geminiAPI.rewriteText(text, tone);
-                } catch (geminiError) {
-                    console.warn('Gemini API failed, falling back to demo mode:', geminiError);
-                    result = await demoAPI.rewriteText(text, tone);
-                }
             } else {
                 try {
                     result = await contentScriptBridge.rewriteText(text, tone);
-                    console.log('✅ Used Chrome Built-in AI');
+                    console.log('✅ Used Chrome Built-in AI (content script)');
                 } catch (bridgeError) {
                     try {
                         if (length !== 'maintain') {
@@ -406,14 +483,10 @@ Missing features will use Gemini API.`);
                         } else {
                             result = await rewriterAPI.rewriteWithTone(text, tone);
                         }
+                        console.log('✅ Used Chrome Built-in AI (direct)');
                     } catch (directError) {
-                        try {
-                            await geminiAPI.initialize();
-                            result = await geminiAPI.rewriteText(text, tone);
-                            console.log('✅ Used Gemini API fallback');
-                        } catch (geminiError) {
-                            result = await demoAPI.rewriteText(text, tone);
-                        }
+                        console.warn('Chrome AI failed, using demo mode:', directError);
+                        result = await demoAPI.rewriteText(text, tone);
                     }
                 }
             }
@@ -446,30 +519,17 @@ Missing features will use Gemini API.`);
         try {
             let result;
 
-            // Priority: Chrome AI → Gemini API → Demo Mode
-            if (this.useDemoMode && !this.useGeminiAPI) {
+            // Priority: Chrome AI → Demo Mode
+            if (this.useDemoMode) {
                 console.log('🎯 Using demo mode');
                 result = await demoAPI.proofread(text);
-            } else if (this.useGeminiAPI) {
-                console.log('🌐 Using Gemini API');
-                try {
-                    result = await geminiAPI.proofread(text);
-                } catch (geminiError) {
-                    console.warn('Gemini API failed, falling back to demo mode:', geminiError);
-                    result = await demoAPI.proofread(text);
-                }
             } else {
                 try {
                     result = await proofreaderAPI.proofread(text);
                     console.log('✅ Used Chrome Built-in AI');
                 } catch (error) {
-                    try {
-                        await geminiAPI.initialize();
-                        result = await geminiAPI.proofread(text);
-                        console.log('✅ Used Gemini API fallback');
-                    } catch (geminiError) {
-                        result = await demoAPI.proofread(text);
-                    }
+                    console.warn('Chrome AI failed, using demo mode:', error);
+                    result = await demoAPI.proofread(text);
                 }
             }
 
@@ -568,14 +628,78 @@ Missing features will use Gemini API.`);
 
         if (isLoading) {
             button.disabled = true;
+            button.classList.add('loading');
             button.dataset.originalText = button.textContent;
-            button.textContent = '⏳ Processing...';
             this.isProcessing = true;
         } else {
             button.disabled = false;
+            button.classList.remove('loading');
             button.textContent = button.dataset.originalText || 'Process';
+            delete button.dataset.originalText;
             this.isProcessing = false;
         }
+    }
+
+    showSkeletonLoader(element, type = 'paragraph') {
+        if (!element) return;
+
+        let skeletonHTML = '';
+
+        if (type === 'paragraph') {
+            skeletonHTML = `
+                <div class="skeleton-paragraph">
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                </div>
+            `;
+        } else if (type === 'essay') {
+            skeletonHTML = `
+                <div class="skeleton-essay">
+                    <div class="skeleton-essay-title"></div>
+                    <div class="skeleton-essay-body">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                    </div>
+                </div>
+            `;
+        } else if (type === 'loading-message') {
+            skeletonHTML = `
+                <div class="loading-message">
+                    <div class="spinner"></div>
+                    <div class="loading-overlay-title">Processing...</div>
+                    <div class="loading-overlay-subtitle">This may take a few moments</div>
+                    <div class="progress-bar">
+                        <div class="progress-bar-indeterminate"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        element.innerHTML = skeletonHTML;
+        element.classList.add('animate-fadeIn');
+    }
+
+    hideSkeletonLoader(element, content) {
+        if (!element) return;
+
+        // Fade out skeleton, fade in content
+        element.style.opacity = '0';
+        element.style.transition = 'opacity 0.2s ease';
+
+        setTimeout(() => {
+            element.innerHTML = content;
+            element.style.opacity = '1';
+            element.classList.add('animate-fadeIn');
+        }, 200);
     }
 
     showSuccess(message) {
@@ -775,77 +899,254 @@ Missing features will use Gemini API.`);
         }
     }
 
-    async saveGeminiKey() {
-        const apiKey = this.elements.geminiApiKeyInput?.value.trim();
+    // ========================================
+    // Privacy Protection / FERPA Demo
+    // ========================================
 
-        if (!apiKey) {
-            this.showError('Please enter a valid API key');
+    loadPiiSample() {
+        const sampleWithPII = `Dear Professor Johnson,
+
+I'm writing to request an extension for my final paper. I've been dealing with some health issues and have attached my medical documentation from Dr. Smith.
+
+My student information:
+- Name: Sarah Chen
+- Student ID: SC894562
+- Email: sarah.chen@university.edu
+- Phone: (555) 123-4567
+- DOB: 03/15/2003
+- Social Security: 123-45-6789
+
+I currently live at 1234 Oak Street, Apartment 5B, and would appreciate if you could send any materials there or to my parent's address.
+
+Thank you for your understanding.
+Sarah Chen`;
+
+        if (this.elements.privacyTestInput) {
+            this.elements.privacyTestInput.value = sampleWithPII;
+            this.elements.privacyTestInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Automatically check after loading sample
+            setTimeout(() => this.checkPrivacy(), 500);
+        }
+    }
+
+    checkPrivacy() {
+        const text = this.elements.privacyTestInput?.value;
+
+        if (!text || text.trim() === '') {
+            this.elements.privacyTestResult.innerHTML = `
+                <div class="alert alert-info">
+                    <span style="font-size: 20px; margin-right: 8px;">ℹ️</span>
+                    <div>
+                        <strong>No content to check</strong>
+                        <p style="margin-top: 4px; font-size: 14px;">Enter some text or load a sample to test the privacy protection.</p>
+                    </div>
+                </div>
+            `;
             return;
         }
 
-        if (!apiKey.startsWith('AIza')) {
-            this.showWarning('API key should start with "AIza". Please verify your key.');
+        // Run FERPA compliance check
+        const result = ferpaChecker.verifyCompliance(text);
+        this.displayPrivacyResult(result);
+    }
+
+    displayPrivacyResult(result) {
+        const { compliant, violations, score, hasCriticalViolations } = result;
+
+        let alertClass = 'safe';
+        let icon = '✅';
+        let title = 'Privacy Protected - No PII Detected';
+        let message = 'This content is safe to process. No personally identifiable information was found.';
+
+        if (hasCriticalViolations) {
+            alertClass = 'critical';
+            icon = '🚫';
+            title = 'Critical Privacy Risk - PII Detected';
+            message = 'This content contains sensitive student information that must be removed before processing.';
+        } else if (violations.length > 0) {
+            alertClass = 'warning';
+            icon = '⚠️';
+            title = 'Privacy Warning - Potential PII';
+            message = 'Some potentially sensitive information was detected. Review before processing.';
         }
 
-        try {
-            await geminiAPI.setApiKey(apiKey);
-            this.elements.geminiStatus.innerHTML = '<p class="success">✅ API key saved successfully!</p>';
-            this.showSuccess('Gemini API key configured. Click "Test Connection" to verify.');
+        let scoreClass = 'safe';
+        if (score < 70) scoreClass = 'critical';
+        else if (score < 90) scoreClass = 'warning';
 
-            // Update mode flags
-            this.useGeminiAPI = true;
-            this.useDemoMode = false;
-        } catch (error) {
-            console.error('Error saving API key:', error);
-            this.showError('Failed to save API key');
+        let html = `
+            <div class="privacy-alert ${alertClass}">
+                <div class="privacy-alert-icon">${icon}</div>
+                <div class="privacy-alert-content">
+                    <div class="privacy-alert-title">${title}</div>
+                    <div class="privacy-alert-message">${message}</div>
+
+                    <div class="privacy-score-container">
+                        <div class="privacy-score-label">
+                            <span>Privacy Score</span>
+                            <span style="font-weight: 600;">${score}/100</span>
+                        </div>
+                        <div class="privacy-score-bar">
+                            <div class="privacy-score-fill ${scoreClass}" style="width: ${score}%;"></div>
+                        </div>
+                    </div>`;
+
+        if (violations.length > 0) {
+            const stats = ferpaChecker.getStats(violations);
+            html += `
+                    <div class="violation-list">
+                        <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">
+                            ${violations.length} Issue${violations.length > 1 ? 's' : ''} Found
+                            ${stats.bySeverity.critical > 0 ? `• ${stats.bySeverity.critical} Critical` : ''}
+                            ${stats.bySeverity.warning > 0 ? `• ${stats.bySeverity.warning} Warning${stats.bySeverity.warning > 1 ? 's' : ''}` : ''}
+                        </div>`;
+
+            // Show first 5 violations
+            violations.slice(0, 5).forEach(v => {
+                html += `
+                        <div class="violation-item">
+                            <span class="violation-badge ${v.severity}">${v.severity}</span>
+                            <div style="flex: 1;">${v.message}</div>
+                        </div>`;
+            });
+
+            if (violations.length > 5) {
+                html += `
+                        <div style="font-size: 12px; color: var(--dl-text-secondary); margin-top: 8px;">
+                            + ${violations.length - 5} more issue${violations.length - 5 > 1 ? 's' : ''}
+                        </div>`;
+            }
+
+            html += `</div>`;
+        }
+
+        html += `
+                </div>
+            </div>`;
+
+        if (this.elements.privacyTestResult) {
+            this.elements.privacyTestResult.innerHTML = html;
+            this.elements.privacyTestResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
 
-    async testGeminiConnection() {
-        if (!this.elements.geminiStatus) return;
+    showPrivacyAlert(result) {
+        const { hasCriticalViolations, violations, score } = result;
 
-        this.elements.geminiStatus.innerHTML = '<p class="warning">Testing connection...</p>';
-        this.setButtonLoading(this.elements.testGeminiKeyBtn, true);
+        if (violations.length === 0) {
+            this.hidePrivacyAlert();
+            return;
+        }
 
-        try {
-            await geminiAPI.initialize();
-            const status = await geminiAPI.checkAvailability();
+        let alertClass = hasCriticalViolations ? 'critical' : 'warning';
+        let icon = hasCriticalViolations ? '🚫' : '⚠️';
+        let title = hasCriticalViolations ? 'Cannot Process - PII Detected' : 'Privacy Warning';
+        let message = hasCriticalViolations
+            ? 'Your content contains sensitive student information. Please remove it before processing.'
+            : 'Potentially sensitive information detected. Review and remove if necessary.';
 
-            if (!status.available) {
-                this.elements.geminiStatus.innerHTML = '<p class="error">❌ No API key configured. Please save your key first.</p>';
-                this.showError('Please save your Gemini API key first');
-                return;
-            }
+        const html = `
+            <div class="privacy-alert ${alertClass}" style="margin: 12px 16px;">
+                <div class="privacy-alert-icon">${icon}</div>
+                <div class="privacy-alert-content">
+                    <div class="privacy-alert-title">${title}</div>
+                    <div class="privacy-alert-message">${message} (Score: ${score}/100)</div>
+                </div>
+            </div>`;
 
-            // Test with a simple prompt
-            const testResult = await geminiAPI.makeRequest('Respond with: "Connection successful"', 0.1, 50);
-
-            if (testResult && testResult.includes('successful')) {
-                this.elements.geminiStatus.innerHTML = `
-                    <p class="success">✅ Connection successful!</p>
-                    <p class="info-text">Your Gemini API is working correctly.</p>
-                    <p class="info-text">Model: gemini-1.5-flash-latest</p>
-                `;
-                this.showSuccess('✅ Gemini API connection verified!');
-
-                // Update mode
-                this.useGeminiAPI = true;
-                this.useDemoMode = false;
-            } else {
-                throw new Error('Unexpected response from API');
-            }
-        } catch (error) {
-            console.error('Gemini API test failed:', error);
-            this.elements.geminiStatus.innerHTML = `
-                <p class="error">❌ Connection failed</p>
-                <p class="error-text">${error.message}</p>
-                <p class="info-text">Please check your API key and try again.</p>
-            `;
-            this.showError(`Connection test failed: ${error.message}`);
-        } finally {
-            this.setButtonLoading(this.elements.testGeminiKeyBtn, false);
+        if (this.elements.privacyAlertContainer) {
+            this.elements.privacyAlertContainer.innerHTML = html;
+            this.elements.privacyAlertContainer.style.display = 'block';
         }
     }
+
+    hidePrivacyAlert() {
+        if (this.elements.privacyAlertContainer) {
+            this.elements.privacyAlertContainer.style.display = 'none';
+            this.elements.privacyAlertContainer.innerHTML = '';
+        }
+    }
+
+    // Helper method to verify content before AI processing
+    verifyContentPrivacy(content) {
+        const result = ferpaChecker.verifyCompliance(content);
+
+        if (result.hasCriticalViolations) {
+            this.showPrivacyAlert(result);
+            return { allowed: false, result };
+        }
+
+        if (result.violations.length > 0) {
+            this.showPrivacyAlert(result);
+            // Show warning but allow processing
+            return { allowed: true, result };
+        }
+
+        this.hidePrivacyAlert();
+        return { allowed: true, result };
+    }
+
+    // ========================================
+    // Success Celebration & Confetti
+    // ========================================
+
+    celebrate(message = '🎉 Success!') {
+        // Create success toast
+        const toast = document.createElement('div');
+        toast.className = 'success-toast';
+        toast.innerHTML = `
+            <span class="success-icon-bounce">✨</span>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+
+        // Remove toast after animation
+        setTimeout(() => {
+            toast.remove();
+        }, 4000);
+
+        // Create confetti container
+        const confettiContainer = document.createElement('div');
+        confettiContainer.className = 'success-celebration';
+        document.body.appendChild(confettiContainer);
+
+        // Generate 50 confetti pieces
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti-piece';
+
+            // Random horizontal position
+            confetti.style.left = Math.random() * 100 + '%';
+
+            // Random animation delay
+            confetti.style.animationDelay = Math.random() * 0.5 + 's';
+
+            // Random animation duration (2-4 seconds)
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+
+            // Random size variation
+            const size = Math.random() * 8 + 6; // 6-14px
+            confetti.style.width = size + 'px';
+            confetti.style.height = size + 'px';
+
+            confettiContainer.appendChild(confetti);
+        }
+
+        // Remove confetti container after animation
+        setTimeout(() => {
+            confettiContainer.remove();
+        }, 5000);
+
+        // Add pulse effect to the output container
+        if (this.elements.draftOutput) {
+            this.elements.draftOutput.classList.add('success-pulse');
+            setTimeout(() => {
+                this.elements.draftOutput.classList.remove('success-pulse');
+            }, 2000);
+        }
+    }
+
 }
 
 // Initialize when DOM is ready
