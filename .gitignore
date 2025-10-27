@@ -6,15 +6,3 @@ build/
 *.log
 .DS_Store
 
-# Claude Code configuration (contains API tokens)
-.claude/
-
-# Internal review and documentation (not for public repo)
-HACKATHON_REVIEW.md
-SCREENSHOT_REVIEW.md
-SUBMISSION_PACKAGE.md
-READY_TO_SUBMIT.md
-VIDEO_SCRIPT.md
-CLAUDE.md
-Screenshot*.png
-Screenshot*.jpg
