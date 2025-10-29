@@ -1,4 +1,4 @@
-# 🎓 DraftLoom - FERPA-Compliant AI Writing Assistant
+# DraftLoom - FERPA-Compliant AI Writing Assistant
 
 **100% on-device AI writing help for students. Your data never leaves Chrome.**
 
@@ -9,7 +9,7 @@
 > Built for the **Google Chrome Built-in AI Challenge 2025*
 
 
-## 📝 Overview
+## Overview
 
 **DraftLoom** is a Chrome extension that helps students and educators write better essays while keeping their data **100% private**. Unlike cloud-based AI tools that send your work to external servers, DraftLoom processes everything locally using Chrome's built-in AI.
 
@@ -23,9 +23,9 @@ DraftLoom uses Chrome's on-device AI APIs to provide comprehensive writing assis
 
 ---
 
-## ✨ Features
+## Features
 
-### 📝 **6 AI-Powered Writing Tools**
+### **6 AI-Powered Writing Tools**
 
 1. **Brainstorm & Analyze** - Break down assignment prompts into key requirements and structure
 2. **Draft Generation** - Create full essay drafts from outlines with academic tone
@@ -34,28 +34,28 @@ DraftLoom uses Chrome's on-device AI APIs to provide comprehensive writing assis
 5. **Summarization** - Condense long texts into concise summaries
 6. **Translation** - Multilingual support for international students
 
-### 🛡️ **FERPA Privacy Protection**
+### **FERPA Privacy Protection**
 
 - **PII Detection** - Automatically scans for Social Security Numbers, student IDs, dates of birth, addresses, phone numbers
 - **Visual Privacy Alerts** - Red critical alerts when sensitive information is detected
 - **Privacy Score** - 0-100 scale showing how safe content is to process
 - **Violation Breakdown** - Detailed list of exactly what sensitive info was found
 
-### 🎨 **Delightful User Experience**
+### **Delightful User Experience**
 
-- **🎉 Celebration Animations** - Confetti when drafts complete (makes learning fun!)
-- **📚 Pre-loaded Samples** - 4 example prompts per tab for instant testing
-- **⚡ Skeleton Loaders** - Smooth loading animations while AI processes
-- **🤖 Demo Mode** - Works even without Chrome AI enabled (accessibility)
-- **📋 Welcome Guide** - Step-by-step Chrome AI setup on first install
+- **Celebration Animations** - Confetti when drafts complete (makes learning fun!)
+- **Pre-loaded Samples** - 4 example prompts per tab for instant testing
+- **Skeleton Loaders** - Smooth loading animations while AI processes
+- **Demo Mode** - Works even without Chrome AI enabled (accessibility)
+- **Welcome Guide** - Step-by-step Chrome AI setup on first install
 
-### 🔒 **Privacy First**
+### **Privacy First**
 
-✅ **100% on-device processing** - No cloud servers
-✅ **FERPA compliant** - Safe for educational institutions
-✅ **No data collection** - Zero tracking or analytics
-✅ **Offline capable** - Works without internet
-✅ **No API keys required** - Uses Chrome's built-in AI
+ **100% on-device processing** - No cloud servers
+**FERPA compliant** - Safe for educational institutions
+**No data collection** - Zero tracking or analytics
+**Offline capable** - Works without internet
+ **No API keys required** - Uses Chrome's built-in AI
 
 ---
 
