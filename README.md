@@ -6,15 +6,8 @@
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://github.com/denyzabra/draftloom-extension)
 [![Built with Chrome AI](https://img.shields.io/badge/Chrome_AI-6_APIs-orange.svg)](https://developer.chrome.com/docs/ai/)
 
-> Built for the **Google Chrome Built-in AI Challenge 2025**
+> Built for the **Google Chrome Built-in AI Challenge 2025*
 
----
-
-## 🎬 Demo Video
-
-**[Watch 3-Minute Demo on YouTube →](#)** *(Link will be added after recording)*
-
----
 
 ## 📝 Overview
 
@@ -66,16 +59,8 @@ DraftLoom uses Chrome's on-device AI APIs to provide comprehensive writing assis
 
 ---
 
-## 🚀 Installation
+## Installation
 
-### **For End Users**
-
-1. Download the latest release from [Releases](https://github.com/denyzabra/draftloom-extension/releases)
-2. Unzip the file
-3. Open Chrome → `chrome://extensions/`
-4. Enable "Developer mode" (toggle in top-right)
-5. Click "Load unpacked" → Select the `dist` folder
-6. Follow the welcome screen setup guide
 
 ### **For Developers**
 
@@ -96,7 +81,7 @@ npm run build
 
 ---
 
-## 🤖 Chrome AI Setup
+## Chrome AI Setup
 
 DraftLoom uses Chrome's experimental built-in AI APIs. Enable them in 3 minutes:
 
@@ -215,13 +200,12 @@ draftloom-extension/
 ├── webpack.config.js       # Webpack bundler config (3 entry points)
 ├── package.json            # Dependencies (Chrome AI, no external AI APIs!)
 ├── LICENSE                 # MIT License
-├── CLAUDE.md              # Development guide for Claude Code
 └── README.md              # This file
 ```
 
 ---
 
-## 🧪 Development
+## Development
 
 ### **Build Commands**
 
@@ -248,7 +232,7 @@ npx jest tests/utils/ferpa-checker.test.js
 
 ---
 
-## 🔧 Technical Highlights
+## Technical Highlights
 
 ### **Chrome AI APIs Used** (6/6 Available)
 
@@ -271,14 +255,14 @@ npx jest tests/utils/ferpa-checker.test.js
 
 ### **Security**
 
-✅ XSS Protection - All HTML output sanitized with `_escapeHtml()`
-✅ CSP Compliant - No inline scripts, only external JS files
-✅ No eval() - Safe code execution
-✅ FERPA Checker - Blocks processing when PII detected
+ XSS Protection - All HTML output sanitized with `_escapeHtml()`
+CSP Compliant - No inline scripts, only external JS files
+No eval() - Safe code execution
+FERPA Checker - Blocks processing when PII detected
 
 ---
 
-## 🎯 Use Cases
+## Use Cases
 
 ### **For Students**
 
@@ -306,29 +290,25 @@ npx jest tests/utils/ferpa-checker.test.js
 
 ---
 
-## 🏆 Awards & Recognition
 
-🥇 **Google Chrome Built-in AI Challenge 2025**
-- Category: Most Helpful Extension
-- Features: 6 Chrome AI APIs, FERPA compliance, privacy-first design
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### **Extension Won't Load**
 
-- ✅ Verify Chrome version: **128+**
-- ✅ Check AI flags are enabled: `chrome://flags`
-- ✅ Build completed successfully: `npm run build`
-- ✅ Load `dist/` folder, not project root
+- Verify Chrome version: **128+**
+- Check AI flags are enabled: `chrome://flags`
+- Build completed successfully: `npm run build`
+- Load `dist/` folder, not project root
 
 ### **Chrome AI Not Working**
 
-- ✅ Enable all 5 flags in `chrome://flags`
-- ✅ Restart Chrome completely
-- ✅ Wait for model download (~2GB, 5-10 min)
-- ✅ Check console: "Chrome AI Active" should show in sidebar
+- Enable all 5 flags in `chrome://flags`
+- Restart Chrome completely
+- Wait for model download (~2GB, 5-10 min)
+- Check console: "Chrome AI Active" should show in sidebar
 
 ### **Demo Mode Always Showing**
 
@@ -341,39 +321,29 @@ To use real AI:
 
 ---
 
-## 📄 License
+## License
 
 **MIT License** - See [LICENSE](LICENSE) file for details.
 
 This project is free and open source for educational use.
 
----
 
-## 🙏 Acknowledgments
 
-- **Chrome Team** - For revolutionary on-device AI APIs
-- **FERPA** - For protecting student privacy since 1974
-- **Students Everywhere** - Who deserve private AI assistance
-
----
-
-## 🔗 Links
+## Links
 
 - **GitHub Repository**: [github.com/denyzabra/draftloom-extension](https://github.com/denyzabra/draftloom-extension)
-- **Demo Video**: *Coming soon*
 - **Chrome AI Docs**: [developer.chrome.com/docs/ai/](https://developer.chrome.com/docs/ai/)
 - **Report Issues**: [GitHub Issues](https://github.com/denyzabra/draftloom-extension/issues)
 
 ---
 
-## 💬 Support
+## Support
 
 Questions? Issues? Suggestions?
 
 - Open an [Issue](https://github.com/denyzabra/draftloom-extension/issues)
-- Check [CLAUDE.md](CLAUDE.md) for development guide
+- Contact: denyzabrahams02@gmail.com
 
----
 
 **Made with ❤️ for students, by developers who care about privacy.**
 
